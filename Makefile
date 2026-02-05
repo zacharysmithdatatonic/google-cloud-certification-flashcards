@@ -1,4 +1,4 @@
-# Professional MLE Flashcards Makefile
+# Google Cloud Certification Flashcards Makefile
 
 # Default target
 .DEFAULT_GOAL := help
@@ -17,7 +17,7 @@ NC := \033[0m # No Color
 
 ## Show this help message
 help:
-	@echo "$(GREEN)Professional MLE Flashcards - Available Commands$(NC)"
+	@echo "$(GREEN)Google Cloud Certification Flashcards - Available Commands$(NC)"
 	@echo ""
 	@echo "$(YELLOW)Development:$(NC)"
 	@echo "  make dev        - Run the app in development mode"
