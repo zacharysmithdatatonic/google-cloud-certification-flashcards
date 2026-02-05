@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/google-cloud-certification-flashcards/static/css/main.81fd4590.css",
-    "main.js": "/google-cloud-certification-flashcards/static/js/main.eee42e47.js",
-    "index.html": "/google-cloud-certification-flashcards/index.html",
-    "main.81fd4590.css.map": "/google-cloud-certification-flashcards/static/css/main.81fd4590.css.map",
-    "main.eee42e47.js.map": "/google-cloud-certification-flashcards/static/js/main.eee42e47.js.map"
+    "main.css": "./static/css/main.81fd4590.css",
+    "main.js": "./static/js/main.93d423be.js",
+    "index.html": "./index.html",
+    "main.81fd4590.css.map": "./static/css/main.81fd4590.css.map",
+    "main.93d423be.js.map": "./static/js/main.93d423be.js.map"
   },
   "entrypoints": [
     "static/css/main.81fd4590.css",
-    "static/js/main.eee42e47.js"
+    "static/js/main.93d423be.js"
   ]
 }
