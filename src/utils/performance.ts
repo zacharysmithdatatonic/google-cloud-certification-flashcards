@@ -36,26 +36,26 @@ export const updatePerformance = (
 };
 
 export const getPerformanceStats = (
-    performance: Map<string, QuestionPerformance>
+    performance: Map<string, QuestionPerformance>,
+    questions: Question[]
 ) => {
+    const currentQuestionIds = new Set(questions.map(q => q.id));
     const stats = {
-        totalQuestions: performance.size,
+        totalQuestions: questions.length,
         totalAnswered: 0,
         totalCorrect: 0,
         totalIncorrect: 0,
         accuracy: 0,
-        needsReview: 0,
     };
 
-    performance.forEach(perf => {
-        if (perf.lastAnswered) {
-            stats.totalAnswered++;
-        }
-        stats.totalCorrect += perf.correctCount;
-        stats.totalIncorrect += perf.incorrectCount;
-
-        if (perf.lastCorrect === false || perf.lastCorrect === null) {
-            stats.needsReview++;
+    performance.forEach((perf, id) => {
+        // Only include stats for questions in the current bank
+        if (currentQuestionIds.has(id)) {
+            if (perf.lastAnswered) {
+                stats.totalAnswered++;
+            }
+            stats.totalCorrect += perf.correctCount;
+            stats.totalIncorrect += perf.incorrectCount;
         }
     });
 
@@ -164,19 +164,27 @@ export const loadPerformanceFromStorage = (
         const key = bankKey
             ? `flashcard-performance-${bankKey}`
             : 'flashcard-performance';
-        let stored = localStorage.getItem(key);
-        // Backwards compatibility: if per-bank key not found, fall back to global key
-        if (!stored && bankKey) {
-            stored = localStorage.getItem('flashcard-performance');
-        }
+        const stored = localStorage.getItem(key);
         if (!stored) return new Map();
 
         const parsed = JSON.parse(stored);
         const performance = new Map<string, QuestionPerformance>();
 
         parsed.forEach(([id, perf]: [string, any]) => {
-            performance.set(id, {
+            // Migrate old IDs (q-1, q-2) to new format (bankKey-q-1, bankKey-q-2)
+            // if they don't already have the bank prefix
+            let migratedId = id;
+            if (
+                bankKey &&
+                id.startsWith('q-') &&
+                !id.startsWith(`${bankKey}-`)
+            ) {
+                migratedId = `${bankKey}-${id}`;
+            }
+
+            performance.set(migratedId, {
                 ...perf,
+                questionId: migratedId, // Also update the questionId field
                 lastAnswered: perf.lastAnswered
                     ? new Date(perf.lastAnswered)
                     : null,

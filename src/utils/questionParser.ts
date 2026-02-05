@@ -12,9 +12,6 @@ const parseOptions = (possibleAnswers: string): string[] => {
     const lines = possibleAnswers.split('\n').filter(line => line.trim());
     const options: string[] = [];
 
-    // Debug logging
-    console.log('Parsing options from:', possibleAnswers);
-
     for (const line of lines) {
         // Match the entire line after the letter and parenthesis
         const match = line.match(/^([A-D])\)(.*)/);
@@ -22,7 +19,6 @@ const parseOptions = (possibleAnswers: string): string[] => {
             // Keep the full text including any commas, but remove any trailing comma
             const optionText = match[2].trim().replace(/,$/, '');
             options.push(optionText);
-            console.log(`Parsed option ${match[1]}: "${optionText}"`);
         }
     }
 
@@ -43,16 +39,16 @@ const parseCorrectAnswerAndExplanation = (
     return { answer, explanation };
 };
 
-export const parseJSON = (jsonContent: string): Question[] => {
+export const parseJSON = (
+    jsonContent: string,
+    bankKey?: string
+): Question[] => {
     const questions: Question[] = [];
+    // Use bank key prefix for unique IDs across different question banks
+    const idPrefix = bankKey ? `${bankKey}-` : '';
 
     try {
         const rawQuestions: RawQuestion[] = JSON.parse(jsonContent);
-
-        console.log(
-            `Starting to parse JSON with ${rawQuestions.length} questions`
-        );
-
         for (let i = 0; i < rawQuestions.length; i++) {
             const rawQuestion = rawQuestions[i];
 
@@ -101,7 +97,7 @@ export const parseJSON = (jsonContent: string): Question[] => {
                 }
 
                 const question: Question = {
-                    id: `q-${i + 1}`,
+                    id: `${idPrefix}q-${i + 1}`,
                     question: rawQuestion.Question.trim(),
                     options: options,
                     answer: answer,
@@ -109,23 +105,10 @@ export const parseJSON = (jsonContent: string): Question[] => {
                 };
 
                 questions.push(question);
-
-                if (i < 3) {
-                    console.log(`Successfully parsed question ${i + 1}:`, {
-                        question: question.question.substring(0, 50) + '...',
-                        optionsCount: options.length,
-                        answer: answer,
-                        explanationLength: explanation.length,
-                    });
-                }
             } catch (error) {
                 console.warn(`Error parsing question ${i}:`, error);
             }
         }
-
-        console.log(
-            `Parsing complete. Successfully parsed ${questions.length} questions out of ${rawQuestions.length} raw questions`
-        );
 
         if (questions.length === 0) {
             console.error(
@@ -140,7 +123,8 @@ export const parseJSON = (jsonContent: string): Question[] => {
 };
 
 export const loadQuestionsFromJSON = async (
-    datasetPath?: string
+    datasetPath?: string,
+    bankKey?: string
 ): Promise<Question[]> => {
     try {
         // Use PUBLIC_URL environment variable to get the correct base path
@@ -154,9 +138,7 @@ export const loadQuestionsFromJSON = async (
         }
 
         const jsonContent = await response.text();
-        const questions = parseJSON(jsonContent);
-
-        console.log(`Loaded ${questions.length} questions from ${path}`);
+        const questions = parseJSON(jsonContent, bankKey);
         return questions;
     } catch (error) {
         console.error('Error loading questions from JSON:', error);

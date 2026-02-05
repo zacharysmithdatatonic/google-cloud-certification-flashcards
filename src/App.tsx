@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Question, QuestionPerformance, StudyMode } from './types';
+import {
+    Question,
+    QuestionPerformance,
+    StudyMode,
+    QuestionBank,
+    QUESTION_BANKS,
+} from './types';
 import { loadQuestionsFromJSON } from './utils/questionParser';
 import {
     createInitialPerformance,
@@ -20,11 +26,9 @@ import {
     KeyboardShortcuts,
     ShortcutItem,
 } from './components/KeyboardShortcuts';
-import { Toaster } from 'react-hot-toast';
 import {
     BookOpen,
     Brain,
-    XCircle,
     RotateCcw,
     List,
     BarChart3,
@@ -40,8 +44,11 @@ import {
     Menu,
     X,
     Sparkles,
+    Home,
 } from 'lucide-react';
 import './App.css';
+import { ConfirmModal } from './components/ConfirmModal';
+import { CertificationSelector } from './components/CertificationSelector';
 
 interface StudyTimeStats {
     totalStudyTime: number; // in minutes
@@ -50,13 +57,17 @@ interface StudyTimeStats {
 // Accuracy Display Component
 const AccuracyDisplay: React.FC<{
     performance: Map<string, QuestionPerformance>;
-}> = ({ performance }) => {
+    questions: Question[]; // Pass questions to filter stats
+}> = ({ performance, questions }) => {
     let totalCorrect = 0;
     let totalIncorrect = 0;
+    const currentQuestionIds = new Set(questions.map(q => q.id));
 
-    performance.forEach(perf => {
-        totalCorrect += perf.correctCount;
-        totalIncorrect += perf.incorrectCount;
+    performance.forEach((perf, id) => {
+        if (currentQuestionIds.has(id)) {
+            totalCorrect += perf.correctCount;
+            totalIncorrect += perf.incorrectCount;
+        }
     });
 
     const totalAttempts = totalCorrect + totalIncorrect;
@@ -74,7 +85,6 @@ const AccuracyDisplay: React.FC<{
                 ({totalCorrect}{' '}
                 <CheckCircle className="correct-icon" size={16} /> /{' '}
                 {totalAttempts} total
-                <XCircle className="incorrect-icon" size={16} />)
             </span>
         </div>
     );
@@ -126,22 +136,18 @@ const setModeInURL = (mode: StudyMode | null) => {
     window.history.replaceState({}, '', url.toString());
 };
 
-const QUESTION_BANKS = [
-    {
-        key: 'mle',
-        label: 'Professional MLE',
-        icon: <Brain size={18} />,
-        dataset: '/pmle.json',
-    },
-    {
-        key: 'genai',
-        label: 'GenAI Leader',
-        icon: <Sparkles size={18} />,
-        dataset: '/genai.json',
-    },
-];
-
 function App() {
+    // Get initial bank from localStorage or null (show selector)
+    const getInitialBank = (): QuestionBank | null => {
+        const savedKey = localStorage.getItem('last-used-bank');
+        if (savedKey) {
+            const bank = QUESTION_BANKS.find(
+                b => b.key === savedKey && b.available
+            );
+            return bank || null;
+        }
+        return null;
+    };
     const [questions, setQuestions] = useState<Question[]>([]);
     const [performance, setPerformance] = useState<
         Map<string, QuestionPerformance>
@@ -150,9 +156,14 @@ function App() {
     const [currentQuestions, setCurrentQuestions] = useState<Question[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
+    const [isSwitchingBank, setIsSwitchingBank] = useState(false);
     const [hasInitializedMode, setHasInitializedMode] = useState(false);
     const [studyTimeStats, setStudyTimeStats] = useState<StudyTimeStats>(() => {
-        const saved = localStorage.getItem('flashcard-study-time');
+        // Load study time for the initial bank (will be updated when bank changes)
+        const lastBankKey = localStorage.getItem('last-used-bank') || 'pmle';
+        const saved = localStorage.getItem(
+            `flashcard-study-time-${lastBankKey}`
+        );
         return saved ? JSON.parse(saved) : { totalStudyTime: 0 };
     });
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -160,40 +171,17 @@ function App() {
     const [metricsDropdownOpen, setMetricsDropdownOpen] = useState(false);
     const metricsBtnRef = useRef<HTMLButtonElement | null>(null);
     const metricsDropdownRef = useRef<HTMLDivElement | null>(null);
-    const [selectedBank, setSelectedBank] = useState('mle');
-    const [isSmallScreen, setIsSmallScreen] = useState(false);
+    const [selectedBank, setSelectedBank] = useState<QuestionBank | null>(
+        getInitialBank
+    );
+    const [showResetStatsModal, setShowResetStatsModal] = useState(false);
 
-    // Detect small screen
+    // Save selected bank to local storage
     useEffect(() => {
-        function handleResize() {
-            setIsSmallScreen(window.innerWidth <= 900);
+        if (selectedBank) {
+            localStorage.setItem('last-used-bank', selectedBank.key);
         }
-        handleResize();
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
-    // Replace BankSelector with a custom dropdown
-    const [bankDropdownOpen, setBankDropdownOpen] = useState(false);
-    const bankDropdownRef = useRef<HTMLDivElement | null>(null);
-    const bankDropdownBtnRef = useRef<HTMLButtonElement | null>(null);
-
-    // Close dropdown on outside click
-    useEffect(() => {
-        if (!bankDropdownOpen) return;
-        function handleClick(e: MouseEvent) {
-            if (
-                bankDropdownRef.current &&
-                !bankDropdownRef.current.contains(e.target as Node) &&
-                bankDropdownBtnRef.current &&
-                !bankDropdownBtnRef.current.contains(e.target as Node)
-            ) {
-                setBankDropdownOpen(false);
-            }
-        }
-        document.addEventListener('mousedown', handleClick);
-        return () => document.removeEventListener('mousedown', handleClick);
-    }, [bankDropdownOpen]);
+    }, [selectedBank]);
 
     // Accessibility: Focus trap and ESC key for sidebar
     useEffect(() => {
@@ -266,35 +254,57 @@ function App() {
         return () => document.removeEventListener('mousedown', handleClick);
     }, [metricsDropdownOpen]);
 
-    const handleStudyTimeUpdate = useCallback((totalMinutes: number) => {
-        setStudyTimeStats(prev => {
-            const updated = {
-                totalStudyTime: prev.totalStudyTime + totalMinutes,
-            };
-            localStorage.setItem(
-                'flashcard-study-time',
-                JSON.stringify(updated)
+    // Update study time stats when bank changes
+    useEffect(() => {
+        if (selectedBank) {
+            const saved = localStorage.getItem(
+                `flashcard-study-time-${selectedBank.key}`
             );
-            return updated;
-        });
-    }, []);
+            setStudyTimeStats(
+                saved ? JSON.parse(saved) : { totalStudyTime: 0 }
+            );
+        }
+    }, [selectedBank]);
+
+    const handleStudyTimeUpdate = useCallback(
+        (totalMinutes: number) => {
+            if (!selectedBank) return;
+            setStudyTimeStats(prev => {
+                const updated = {
+                    totalStudyTime: prev.totalStudyTime + totalMinutes,
+                };
+                localStorage.setItem(
+                    `flashcard-study-time-${selectedBank.key}`,
+                    JSON.stringify(updated)
+                );
+                return updated;
+            });
+        },
+        [selectedBank]
+    );
 
     // Load questions and performance on app start or when selectedBank changes
     useEffect(() => {
+        if (!selectedBank || !selectedBank.dataset) {
+            setIsLoading(false);
+            return;
+        }
+
         const loadData = async () => {
+            setIsSwitchingBank(true);
             try {
                 // Load JSON data from public folder based on selectedBank
-                const bank =
-                    QUESTION_BANKS.find(b => b.key === selectedBank) ||
-                    QUESTION_BANKS[0];
+                // Pass bank key to ensure unique question IDs per bank
                 const parsedQuestions = await loadQuestionsFromJSON(
-                    bank.dataset
+                    selectedBank.dataset!,
+                    selectedBank.key
                 );
                 setQuestions(parsedQuestions);
 
                 // Load performance from localStorage (per bank)
-                const savedPerformance =
-                    loadPerformanceFromStorage(selectedBank);
+                const savedPerformance = loadPerformanceFromStorage(
+                    selectedBank.key
+                );
 
                 // Initialize performance for new questions
                 const updatedPerformance = new Map(savedPerformance);
@@ -308,10 +318,11 @@ function App() {
                 });
 
                 setPerformance(updatedPerformance);
-                setIsLoading(false);
             } catch (error) {
                 console.error('Error loading data:', error);
+            } finally {
                 setIsLoading(false);
+                setIsSwitchingBank(false);
             }
         };
 
@@ -382,10 +393,13 @@ function App() {
 
     // Save performance to localStorage whenever it changes (per bank)
     useEffect(() => {
+        // Do not save while switching banks to prevent race conditions
+        if (isSwitchingBank || !selectedBank) return;
+
         if (performance.size > 0) {
-            savePerformanceToStorage(performance, selectedBank);
+            savePerformanceToStorage(performance, selectedBank.key);
         }
-    }, [performance, selectedBank]);
+    }, [performance, selectedBank, isSwitchingBank]);
 
     // Sync URL when currentMode changes (but not during initial load)
     useEffect(() => {
@@ -444,8 +458,32 @@ function App() {
         setCurrentIndex(0);
     };
 
-    const stats = getPerformanceStats(performance);
+    // Recalculate stats when performance or questions change (for homepage stats)
+    // Only include stats for questions in the current bank
+    const stats = getPerformanceStats(performance, questions);
     const reviewQuestions = getQuestionsForReview(questions, performance);
+
+    // Update reset statistics to clear all banks
+    const resetAllStatistics = () => {
+        setPerformance(new Map());
+        setStudyTimeStats({ totalStudyTime: 0 });
+
+        // Clear performance for all banks
+        QUESTION_BANKS.forEach(bank => {
+            localStorage.removeItem(`flashcard-performance-${bank.key}`);
+        });
+        // Clear legacy performance data
+        localStorage.removeItem('flashcard-performance');
+        localStorage.removeItem('flashcard-performance-mle');
+
+        // Clear study time for all banks
+        QUESTION_BANKS.forEach(bank => {
+            localStorage.removeItem(`flashcard-study-time-${bank.key}`);
+        });
+        // Clear legacy study time data
+        localStorage.removeItem('flashcard-study-time');
+        localStorage.removeItem('flashcard-study-time-mle');
+    };
 
     // Define mode-specific keyboard shortcuts
     const getShortcuts = useCallback((): ShortcutItem[] => {
@@ -512,23 +550,33 @@ function App() {
             </button>
             {/* App logo and title at the top of the sidebar */}
             <div className="sidebar-app-title">
-                {selectedBank === 'genai' ? (
+                {selectedBank?.key === 'genai' ? (
                     <Sparkles size={24} />
                 ) : (
                     <Brain size={24} />
                 )}
-                <span>
-                    {selectedBank === 'genai'
-                        ? 'GenAI Leader Flashcards'
-                        : 'Professional MLE Flashcards'}
-                </span>
+                <span>{selectedBank?.name || 'Certification'} Flashcards</span>
             </div>
             <div className="sidebar-content">
-                {/* Bank dropdown at top if on home and small screen */}
-                {!currentMode && isSmallScreen && <BankSelector sidebarMode />}
+                {/* Home button to go back to certification selector */}
+                <button
+                    className="sidebar-home-btn"
+                    onClick={() => {
+                        setSelectedBank(null);
+                        setCurrentMode(null);
+                        setIsSidebarOpen(false);
+                        window.scrollTo(0, 0);
+                    }}
+                >
+                    <Home size={18} />
+                    <span>Change Certification</span>
+                </button>
                 <section className="sidebar-section">
                     <h3 className="sidebar-section-label">Accuracy</h3>
-                    <AccuracyDisplay performance={performance} />
+                    <AccuracyDisplay
+                        performance={performance}
+                        questions={questions}
+                    />
                 </section>
                 <section className="sidebar-section">
                     <h3 className="sidebar-section-label">Progress</h3>
@@ -561,101 +609,23 @@ function App() {
         </aside>
     );
 
-    // Replace BankSelector with a custom dropdown
-    const BankSelector: React.FC<{ sidebarMode?: boolean }> = ({
-        sidebarMode,
-    }) => {
-        if (sidebarMode) {
-            return (
-                <section className="sidebar-section bank-sidebar-section">
-                    <h3 className="sidebar-section-label">Question Bank</h3>
-                    <div className="bank-sidebar-list">
-                        {QUESTION_BANKS.map(bank => (
-                            <button
-                                key={bank.key}
-                                className={`bank-sidebar-option${selectedBank === bank.key ? ' selected' : ''}`}
-                                onClick={() => setSelectedBank(bank.key)}
-                                aria-pressed={selectedBank === bank.key}
-                            >
-                                <span className="bank-dropdown-icon">
-                                    {bank.icon}
-                                </span>
-                                <span className="bank-dropdown-label">
-                                    {bank.label}
-                                </span>
-                            </button>
-                        ))}
-                    </div>
-                </section>
-            );
-        }
-        // Default: header dropdown
-        return (
-            <div className="bank-dropdown-wrapper">
-                <button
-                    className="bank-dropdown-btn"
-                    ref={bankDropdownBtnRef}
-                    aria-haspopup="true"
-                    aria-expanded={bankDropdownOpen}
-                    onClick={() => setBankDropdownOpen(v => !v)}
-                >
-                    {QUESTION_BANKS.find(b => b.key === selectedBank)?.icon}
-                    <span className="bank-dropdown-label">
-                        {
-                            QUESTION_BANKS.find(b => b.key === selectedBank)
-                                ?.label
-                        }
-                    </span>
-                    <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                        <path
-                            d="M6 8l4 4 4-4"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                    </svg>
-                </button>
-                {bankDropdownOpen && (
-                    <div
-                        className="bank-dropdown-list"
-                        ref={bankDropdownRef}
-                        tabIndex={-1}
-                        role="menu"
-                    >
-                        {QUESTION_BANKS.map(bank => (
-                            <button
-                                key={bank.key}
-                                className={`bank-dropdown-option${selectedBank === bank.key ? ' selected' : ''}`}
-                                onClick={() => {
-                                    setSelectedBank(bank.key);
-                                    setBankDropdownOpen(false);
-                                }}
-                                aria-pressed={selectedBank === bank.key}
-                            >
-                                <span className="bank-dropdown-icon">
-                                    {bank.icon}
-                                </span>
-                                <span className="bank-dropdown-info">
-                                    <span className="bank-dropdown-label">
-                                        {bank.label}
-                                    </span>
-                                </span>
-                            </button>
-                        ))}
-                    </div>
-                )}
-            </div>
-        );
+    // Handler for going back to certification selector
+    const handleBackToCertifications = () => {
+        setSelectedBank(null);
+        setCurrentMode(null);
+        setCurrentQuestions([]);
+        setCurrentIndex(0);
+        window.scrollTo(0, 0);
     };
 
     const renderHeader = () => {
         // Determine app name and logo based on selected bank
         let appLogo = <Brain size={24} />;
-        let appName = 'Professional MLE Flashcards';
-        if (selectedBank === 'genai') {
+        let appName = selectedBank?.name
+            ? `${selectedBank.name} Flashcards`
+            : 'Certification Flashcards';
+        if (selectedBank?.key === 'genai') {
             appLogo = <Sparkles size={24} />;
-            appName = 'GenAI Leader Flashcards';
         }
         return (
             <header className="app-header">
@@ -697,10 +667,19 @@ function App() {
                             </div>
                         </>
                     ) : (
-                        <h1>
-                            {appLogo}
-                            <span>{appName}</span>
-                        </h1>
+                        <>
+                            <button
+                                onClick={handleBackToCertifications}
+                                className="home-button"
+                                title="Change certification"
+                            >
+                                <Home size={20} />
+                            </button>
+                            <h1>
+                                {appLogo}
+                                <span>{appName}</span>
+                            </h1>
+                        </>
                     )}
                 </div>
                 {/* Hamburger menu only on small screens */}
@@ -734,7 +713,10 @@ function App() {
                                 tabIndex={-1}
                                 role="menu"
                             >
-                                <AccuracyDisplay performance={performance} />
+                                <AccuracyDisplay
+                                    performance={performance}
+                                    questions={questions}
+                                />
                                 <ProgressBar
                                     current={stats.totalAnswered}
                                     total={questions.length}
@@ -744,11 +726,23 @@ function App() {
                     </div>
                     <KeyboardShortcuts shortcuts={getShortcuts()} />
                 </div>
-                {/* Show bank dropdown in header only if not small screen */}
-                {!currentMode && !isSmallScreen && <BankSelector />}
             </header>
         );
     };
+
+    // Show certification selector if no bank is selected
+    if (!selectedBank) {
+        return (
+            <div className="app cert-selector-page">
+                <CertificationSelector
+                    onSelectBank={bank => {
+                        setSelectedBank(bank);
+                        window.scrollTo(0, 0);
+                    }}
+                />
+            </div>
+        );
+    }
 
     if (isLoading) {
         return (
@@ -819,7 +813,6 @@ function App() {
 
     return (
         <div className="app">
-            <Toaster />
             {renderHeader()}
             {/* Sidebar and overlay for small screens */}
             {isSidebarOpen && (
@@ -946,28 +939,27 @@ function App() {
 
             <footer className="app-footer">
                 <Heart size={16} />
-                <p>
-                    Keep practicing to improve your machine learning knowledge!
-                </p>
+                <p>Keep practicing to ace your Google Cloud certification!</p>
                 <button
                     className="reset-stats-btn"
                     title="Reset all statistics"
-                    onClick={() => {
-                        if (
-                            window.confirm(
-                                'Are you sure you want to reset all statistics? This cannot be undone.'
-                            )
-                        ) {
-                            setPerformance(new Map());
-                            setStudyTimeStats({ totalStudyTime: 0 });
-                            localStorage.removeItem('flashcard-performance');
-                            localStorage.removeItem('flashcard-study-time');
-                        }
-                    }}
+                    onClick={() => setShowResetStatsModal(true)}
                 >
                     Reset Statistics
                 </button>
             </footer>
+            <ConfirmModal
+                open={showResetStatsModal}
+                title="Reset All Statistics?"
+                message="Are you sure you want to reset all statistics? This cannot be undone."
+                confirmText="Reset"
+                cancelText="Cancel"
+                onConfirm={() => {
+                    resetAllStatistics();
+                    setShowResetStatsModal(false);
+                }}
+                onCancel={() => setShowResetStatsModal(false)}
+            />
         </div>
     );
 }

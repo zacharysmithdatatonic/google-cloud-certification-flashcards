@@ -16,6 +16,7 @@ import {
     ArrowLeft,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { ConfirmModal } from './ConfirmModal';
 
 // Audio URLs
 const NOTIFICATION_SOUND = `${process.env.PUBLIC_URL}/sounds/notification.mp3`;
@@ -78,6 +79,10 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
         null
     );
     const [waitingToContinue, setWaitingToContinue] = useState(false);
+    const [showResetTimerModal, setShowResetTimerModal] = useState(false);
+    // Track if settings have changed
+    const [pendingSettings, setPendingSettings] =
+        useState<TimerSettings | null>(null);
 
     // Track actual elapsed time in work mode
     const startTimeRef = useRef<number | null>(null);
@@ -317,11 +322,6 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
         setIsRunning(!isRunning);
     };
 
-    const resetTimer = () => {
-        setIsRunning(false);
-        setTimeLeft(isWorkMode ? settings.workTime : settings.breakTime);
-    };
-
     const formatTime = (seconds: number): string => {
         const minutes = Math.floor(seconds / 60);
         const remainingSeconds = seconds % 60;
@@ -331,17 +331,25 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
     const handleSettingChange = (key: keyof TimerSettings, value: string) => {
         const numValue = parseInt(value, 10);
         if (!isNaN(numValue) && numValue > 0) {
-            setSettings(prev => ({
-                ...prev,
+            setPendingSettings(prev => ({
+                ...(prev || settings),
                 [key]:
                     key === 'sessionsUntilLongBreak' ? numValue : numValue * 60,
             }));
         }
     };
 
+    const applySettings = () => {
+        if (pendingSettings) {
+            setSettings(pendingSettings);
+        }
+        setIsSettingsOpen(false);
+        setPendingSettings(null);
+    };
+
     const closeSettings = () => {
         setIsSettingsOpen(false);
-        resetTimer(); // Reset timer with new settings
+        setPendingSettings(null);
     };
 
     return (
@@ -395,7 +403,13 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
                                                 >
                                                     <SkipForward size={16} />
                                                 </button>
-                                                <button onClick={resetTimer}>
+                                                <button
+                                                    onClick={() =>
+                                                        setShowResetTimerModal(
+                                                            true
+                                                        )
+                                                    }
+                                                >
                                                     <RotateCcw size={16} />
                                                 </button>
                                             </>
@@ -532,6 +546,14 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
                                             }
                                         />
                                     </div>
+                                    <div className="setting-item">
+                                        <button onClick={applySettings}>
+                                            Save
+                                        </button>
+                                        <button onClick={closeSettings}>
+                                            Cancel
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -615,7 +637,11 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
                                                         />
                                                     </button>
                                                     <button
-                                                        onClick={resetTimer}
+                                                        onClick={() =>
+                                                            setShowResetTimerModal(
+                                                                true
+                                                            )
+                                                        }
                                                     >
                                                         <RotateCcw size={16} />
                                                     </button>
@@ -745,6 +771,20 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
                                                 }
                                             />
                                         </div>
+                                        <div className="setting-actions">
+                                            <button
+                                                className="setting-save-btn"
+                                                onClick={applySettings}
+                                            >
+                                                Save
+                                            </button>
+                                            <button
+                                                className="setting-cancel-btn"
+                                                onClick={closeSettings}
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -752,6 +792,21 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
                     )}
                 </>
             )}
+            <ConfirmModal
+                open={showResetTimerModal}
+                title="Reset Timer?"
+                message="Are you sure you want to reset the Pomodoro timer?"
+                confirmText="Reset"
+                cancelText="Cancel"
+                onConfirm={() => {
+                    setIsRunning(false);
+                    setTimeLeft(
+                        isWorkMode ? settings.workTime : settings.breakTime
+                    );
+                    setShowResetTimerModal(false);
+                }}
+                onCancel={() => setShowResetTimerModal(false)}
+            />
         </div>
     );
 };
