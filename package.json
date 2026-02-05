@@ -2,7 +2,7 @@
   "name": "google-cloud-certification-flashcards",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://zacharysmithdatatonic.github.io/google-cloud-certification-flashcards/",
+  "homepage": ".",
   "dependencies": {
     "lucide-react": "^0.294.0",
     "papaparse": "^5.4.1",
