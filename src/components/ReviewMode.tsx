@@ -34,57 +34,78 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
     onPrevious,
     performance,
 }) => {
-    const [selectedOption, setSelectedOption] = useState<number | null>(null);
+    const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
     const [showAnswer, setShowAnswer] = useState(false);
 
     const currentQuestion = questions[currentIndex];
     const currentPerformance = performance.get(currentQuestion?.id);
 
-    const getCorrectOptionIndex = useCallback(() => {
-        // Convert answer letter (A, B, C, D) to index (0, 1, 2, 3)
-        const answerLetter = currentQuestion.answer.trim().toUpperCase();
+    const isMultiAnswer = currentQuestion.answer.length > 1;
+
+    const getCorrectOptionIndexes = useCallback(() => {
         const letterToIndex: { [key: string]: number } = {
             A: 0,
             B: 1,
             C: 2,
             D: 3,
+            E: 4,
+            F: 5,
+            G: 6,
         };
 
-        return letterToIndex[answerLetter] !== undefined
-            ? letterToIndex[answerLetter]
-            : -1;
+        return currentQuestion.answer
+            .map(answerLetter => {
+                const normalized = answerLetter.trim().toUpperCase();
+                return letterToIndex[normalized];
+            })
+            .filter((index): index is number => index !== undefined);
     }, [currentQuestion]);
 
     const handleOptionSelect = useCallback(
         (optionIndex: number) => {
-            if (!showAnswer) {
-                setSelectedOption(optionIndex);
+            if (showAnswer) {
+                return;
+            }
+
+            if (isMultiAnswer) {
+                setSelectedOptions(prev => {
+                    if (prev.includes(optionIndex)) {
+                        return prev.filter(option => option !== optionIndex);
+                    }
+                    return [...prev, optionIndex];
+                });
+            } else {
+                setSelectedOptions([optionIndex]);
             }
         },
-        [showAnswer]
+        [showAnswer, isMultiAnswer]
     );
 
     const handleRevealAnswer = useCallback(() => {
         setShowAnswer(true);
 
         // Automatically determine if the answer is correct
-        const correctOptionIndex = getCorrectOptionIndex();
-        const isCorrect = selectedOption === correctOptionIndex;
+        const correctOptionIndexes = getCorrectOptionIndexes();
+        const isCorrect =
+            selectedOptions.length === correctOptionIndexes.length &&
+            selectedOptions.every(option =>
+                correctOptionIndexes.includes(option)
+            );
 
         // Automatically call onAnswer with the result
         onAnswer(isCorrect);
-    }, [getCorrectOptionIndex, selectedOption, onAnswer]);
+    }, [getCorrectOptionIndexes, selectedOptions, onAnswer]);
 
     const handleNext = useCallback(() => {
         setShowAnswer(false);
-        setSelectedOption(null);
+        setSelectedOptions([]);
         onNext();
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, [onNext]);
 
     const handlePrevious = useCallback(() => {
         setShowAnswer(false);
-        setSelectedOption(null);
+        setSelectedOptions([]);
         onPrevious();
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, [onPrevious]);
@@ -148,7 +169,7 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
                 case 'Enter':
                 case ' ':
                     event.preventDefault();
-                    if (!showAnswer && selectedOption !== null) {
+                    if (!showAnswer && selectedOptions.length > 0) {
                         handleRevealAnswer();
                     } else if (showAnswer) {
                         handleNext();
@@ -163,7 +184,7 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
         currentIndex,
         questions.length,
         showAnswer,
-        selectedOption,
+        selectedOptions,
         handleNext,
         handlePrevious,
         handleOptionSelect,
@@ -188,8 +209,10 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
         );
     }
 
-    const correctOptionIndex = getCorrectOptionIndex();
-    const isCorrect = selectedOption === correctOptionIndex;
+    const correctOptionIndexes = getCorrectOptionIndexes();
+    const isCorrect =
+        selectedOptions.length === correctOptionIndexes.length &&
+        selectedOptions.every(option => correctOptionIndexes.includes(option));
 
     return (
         <div className="review-container">
@@ -243,6 +266,20 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
                             </div>
                         )}
                     </div>
+                    {currentQuestion.questionImages?.length ? (
+                        <div className="question-images">
+                            {currentQuestion.questionImages.map(
+                                (image, index) => (
+                                    <img
+                                        key={`${currentQuestion.id}-qimg-${index}`}
+                                        src={image}
+                                        alt=""
+                                        className="question-image"
+                                    />
+                                )
+                            )}
+                        </div>
+                    ) : null}
                     <p className="question-text">
                         {formatText(currentQuestion.question)}
                     </p>
@@ -256,15 +293,18 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
                                 key={index}
                                 onClick={() => handleOptionSelect(index)}
                                 className={`option-button ${
-                                    selectedOption === index ? 'selected' : ''
+                                    selectedOptions.includes(index)
+                                        ? 'selected'
+                                        : ''
                                 } ${
-                                    showAnswer && index === correctOptionIndex
+                                    showAnswer &&
+                                    correctOptionIndexes.includes(index)
                                         ? 'correct'
                                         : ''
                                 } ${
                                     showAnswer &&
-                                    selectedOption === index &&
-                                    index !== correctOptionIndex
+                                    selectedOptions.includes(index) &&
+                                    !correctOptionIndexes.includes(index)
                                         ? 'incorrect'
                                         : ''
                                 }`}
@@ -277,6 +317,17 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
                                 <span className="option-text">
                                     {formatText(option)}
                                 </span>
+                                {currentQuestion.optionImages?.[index] ? (
+                                    <img
+                                        src={
+                                            currentQuestion.optionImages[
+                                                index
+                                            ] || ''
+                                        }
+                                        alt=""
+                                        className="option-image"
+                                    />
+                                ) : null}
                             </button>
                         ))}
                     </div>
@@ -291,7 +342,7 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
                         <p className="answer-text">
                             <strong>
                                 Correct Answer:{' '}
-                                {formatText(currentQuestion.answer)}
+                                {formatText(currentQuestion.answer.join(', '))}
                             </strong>
                         </p>
                         {hasExplanation(currentQuestion.explanation) && (
@@ -299,7 +350,7 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
                                 <p>{formatText(currentQuestion.explanation)}</p>
                             </div>
                         )}
-                        {selectedOption !== null && (
+                        {selectedOptions.length > 0 && (
                             <div className="result-indicator">
                                 {isCorrect ? (
                                     <p className="correct-result">
@@ -320,7 +371,10 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
                                             }}
                                         />
                                         Incorrect. The correct answer was{' '}
-                                        {formatText(currentQuestion.answer)}.
+                                        {formatText(
+                                            currentQuestion.answer.join(', ')
+                                        )}
+                                        .
                                     </p>
                                 )}
                             </div>
@@ -333,7 +387,7 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
                         <button
                             onClick={handleRevealAnswer}
                             className="btn btn-primary"
-                            disabled={selectedOption === null}
+                            disabled={selectedOptions.length === 0}
                             title="Reveal answer (Space/Enter)"
                         >
                             <Eye size={16} />

@@ -4,10 +4,8 @@ import {
     TrendingUp,
     TrendingDown,
     Eye,
-    EyeOff,
     Search,
     Filter,
-    BookOpen,
     HelpCircle,
     CheckCircle,
     XCircle,
@@ -33,9 +31,19 @@ export const MemoriseMode: React.FC<MemoriseModeProps> = ({
 }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [showAnswers, setShowAnswers] = useState(true);
+    const [revealedAnswers, setRevealedAnswers] = useState<Set<string>>(
+        () => new Set()
+    );
     const [sortBy, setSortBy] = useState<'index' | 'performance' | 'accuracy'>(
         'index'
     );
+
+    const toggleShowAnswers = (nextValue: boolean) => {
+        setShowAnswers(nextValue);
+        if (!nextValue) {
+            setRevealedAnswers(new Set());
+        }
+    };
 
     // Add keyboard event listeners
     useEffect(() => {
@@ -52,7 +60,7 @@ export const MemoriseMode: React.FC<MemoriseModeProps> = ({
                 case 'h':
                 case 'H':
                     event.preventDefault();
-                    setShowAnswers(!showAnswers);
+                    toggleShowAnswers(!showAnswers);
                     break;
                 case '/':
                     event.preventDefault();
@@ -83,7 +91,7 @@ export const MemoriseMode: React.FC<MemoriseModeProps> = ({
             formatText(q.question)
                 .toLowerCase()
                 .includes(searchTerm.toLowerCase()) ||
-            formatText(q.answer)
+            formatText(q.answer.join(', '))
                 .toLowerCase()
                 .includes(searchTerm.toLowerCase()) ||
             formatText(q.explanation)
@@ -135,14 +143,6 @@ export const MemoriseMode: React.FC<MemoriseModeProps> = ({
 
     return (
         <div className="memorise-container">
-            <div className="memorise-header">
-                <h2>
-                    <BookOpen size={24} />
-                    Memorise Mode
-                </h2>
-                <p>Review all questions and answers to reinforce learning</p>
-            </div>
-
             <div className="memorise-controls">
                 <div className="search-container">
                     <Search size={18} />
@@ -156,14 +156,19 @@ export const MemoriseMode: React.FC<MemoriseModeProps> = ({
                 </div>
 
                 <div className="view-controls">
-                    <button
-                        onClick={() => setShowAnswers(!showAnswers)}
-                        className="btn btn-secondary"
+                    <label
+                        className="checkbox-toggle"
                         title="Toggle answers (H)"
                     >
-                        {showAnswers ? <EyeOff size={16} /> : <Eye size={16} />}
-                        {showAnswers ? 'Hide' : 'Show'} Answers
-                    </button>
+                        <input
+                            type="checkbox"
+                            checked={showAnswers}
+                            onChange={event =>
+                                toggleShowAnswers(event.target.checked)
+                            }
+                        />
+                        <span className="checkbox-label">Show Answers</span>
+                    </label>
 
                     <div className="sort-container">
                         <Filter size={16} />
@@ -239,6 +244,20 @@ export const MemoriseMode: React.FC<MemoriseModeProps> = ({
                                         <HelpCircle size={18} />
                                         Question
                                     </h3>
+                                    {question.questionImages?.length ? (
+                                        <div className="question-images">
+                                            {question.questionImages.map(
+                                                (image, index) => (
+                                                    <img
+                                                        key={`${question.id}-qimg-${index}`}
+                                                        src={image}
+                                                        alt=""
+                                                        className="question-image"
+                                                    />
+                                                )
+                                            )}
+                                        </div>
+                                    ) : null}
                                     <p className="question-text">
                                         {formatText(question.question)}
                                     </p>
@@ -264,13 +283,45 @@ export const MemoriseMode: React.FC<MemoriseModeProps> = ({
                                                     <span className="option-text">
                                                         {formatText(option)}
                                                     </span>
+                                                    {question.optionImages?.[
+                                                        optionIndex
+                                                    ] ? (
+                                                        <img
+                                                            src={
+                                                                question
+                                                                    .optionImages[
+                                                                    optionIndex
+                                                                ] || ''
+                                                            }
+                                                            alt=""
+                                                            className="option-image"
+                                                        />
+                                                    ) : null}
                                                 </div>
                                             )
                                         )}
                                     </div>
                                 </div>
 
-                                {showAnswers && (
+                                {!showAnswers &&
+                                    !revealedAnswers.has(question.id) && (
+                                        <button
+                                            className="btn btn-secondary"
+                                            onClick={() =>
+                                                setRevealedAnswers(
+                                                    prevAnswers =>
+                                                        new Set(
+                                                            prevAnswers
+                                                        ).add(question.id)
+                                                )
+                                            }
+                                        >
+                                            Show answer
+                                        </button>
+                                    )}
+
+                                {(showAnswers ||
+                                    revealedAnswers.has(question.id)) && (
                                     <div className="answer-section">
                                         <h4>
                                             <CheckCircle size={16} />
@@ -279,7 +330,9 @@ export const MemoriseMode: React.FC<MemoriseModeProps> = ({
                                         <p className="answer-text">
                                             <strong>
                                                 Correct Answer:{' '}
-                                                {formatText(question.answer)}
+                                                {formatText(
+                                                    question.answer.join(', ')
+                                                )}
                                             </strong>
                                         </p>
                                         {hasExplanation(

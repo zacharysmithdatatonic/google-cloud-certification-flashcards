@@ -664,6 +664,12 @@ function App() {
                                         <span>Fill-in-Blank Mode</span>
                                     </>
                                 )}
+                                {currentMode === 'memorise' && (
+                                    <>
+                                        <List size={16} />
+                                        <span>Memorise Mode</span>
+                                    </>
+                                )}
                             </div>
                         </>
                     ) : (

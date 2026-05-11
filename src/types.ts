@@ -2,8 +2,10 @@ export interface Question {
     id: string;
     question: string;
     options: string[];
-    answer: string;
+    answer: string[];
     explanation: string;
+    questionImages?: string[];
+    optionImages?: Array<string | null>;
 }
 
 export interface QuestionPerformance {
@@ -150,8 +152,8 @@ export const QUESTION_BANKS: QuestionBank[] = [
         name: 'Cloud Developer',
         shortName: 'PCD',
         tier: 'professional',
-        dataset: null,
-        available: false,
+        dataset: '/pcd.json',
+        available: true,
         color: '#4285F4',
     },
     {

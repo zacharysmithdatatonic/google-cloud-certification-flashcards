@@ -269,7 +269,7 @@ export const FillInTheBlankMode: React.FC<FillInTheBlankModeProps> = ({
 
         const generateBlanks = (): Blank[] => {
             // Parse the correct answer from the options
-            const correctAnswerLetter = currentQuestion.answer.trim();
+            const correctAnswerLetter = currentQuestion.answer[0]?.trim() || '';
             const optionsText = currentQuestion.options.join('\n');
 
             // Find the correct answer text based on the letter
@@ -284,10 +284,12 @@ export const FillInTheBlankMode: React.FC<FillInTheBlankModeProps> = ({
             });
 
             // Find the correct answer text in the options array directly
-            correctAnswerText =
-                currentQuestion.options[
-                    correctAnswerLetter.charCodeAt(0) - 'A'.charCodeAt(0)
-                ];
+            if (correctAnswerLetter) {
+                correctAnswerText =
+                    currentQuestion.options[
+                        correctAnswerLetter.charCodeAt(0) - 'A'.charCodeAt(0)
+                    ];
+            }
 
             // Remove any trailing comma
             if (correctAnswerText) {
@@ -302,7 +304,7 @@ export const FillInTheBlankMode: React.FC<FillInTheBlankModeProps> = ({
                 console.warn(
                     'Could not parse answer text, falling back to original answer'
                 );
-                correctAnswerText = currentQuestion.answer;
+                correctAnswerText = currentQuestion.answer.join(', ');
             }
 
             const text = correctAnswerText;
@@ -402,11 +404,13 @@ export const FillInTheBlankMode: React.FC<FillInTheBlankModeProps> = ({
 
     const renderAnswerWithBlanks = () => {
         // Parse the correct answer from the options
-        const correctAnswerLetter = currentQuestion?.answer.trim() || '';
+        const correctAnswerLetter = currentQuestion?.answer[0]?.trim() || '';
         const correctAnswerText =
-            currentQuestion?.options[
-                correctAnswerLetter.charCodeAt(0) - 'A'.charCodeAt(0)
-            ]?.replace(/,\s*$/, '') || '';
+            correctAnswerLetter && currentQuestion
+                ? currentQuestion.options[
+                      correctAnswerLetter.charCodeAt(0) - 'A'.charCodeAt(0)
+                  ]?.replace(/,\s*$/, '') || ''
+                : '';
 
         if (!currentQuestion || blanks.length === 0) {
             return (
@@ -616,6 +620,20 @@ export const FillInTheBlankMode: React.FC<FillInTheBlankModeProps> = ({
                             </div>
                         )}
                     </div>
+                    {currentQuestion.questionImages?.length ? (
+                        <div className="question-images">
+                            {currentQuestion.questionImages.map(
+                                (image, index) => (
+                                    <img
+                                        key={`${currentQuestion.id}-qimg-${index}`}
+                                        src={image}
+                                        alt=""
+                                        className="question-image"
+                                    />
+                                )
+                            )}
+                        </div>
+                    ) : null}
                     <p className="question-text">
                         {formatText(currentQuestion.question)}
                     </p>

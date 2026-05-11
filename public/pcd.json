@@ -1,0 +1,1031 @@
+[
+    {
+        "question": "You are developing an online gaming platform as a microservices application on GKE. Users on social media are complaining about long loading times in certain parts of the application. You need to investigate performance bottlenecks in the application and identify which HTTP requests have a significantly high latency span in user requests. What should you do?",
+        "options": [
+            "Instrument your microservices by installing the OpenTelemetry tracing package. Update your application code to send traces to Trace for inspection and analysis. Create an analysis report on Trace to analyze user requests.",
+            "Update your microservices to log HTTP request methods and requests to STDOUT. Use the logs router to send container logs to Cloud Logging. Create filters in Cloud Logging to evaluate the latency of user requests across different methods and request paths.",
+            "Configure GKE workload metrics using kubectl. Select all Pods to send their metrics to Cloud Monitoring. Create a custom dashboard of application metrics in Cloud Monitoring to determine performance bottlenecks of your GKE cluster.",
+            "Install tcpdump on your GKE nodes. Run tcpdump to capture network traffic over an extended period of time to collect data. Analyze the data files using Wireshark to determine the cause of high latency."
+        ],
+        "answer": [
+            "A"
+        ],
+        "explanation": "A is correct because it describes Google's recommended approach to capture latency spans in user requests (https://cloud.google.com/trace/docs/analysis-reports).\nB is not correct as STDOUT logs do not provide convenient data format to capture latency data.\nC is not correct as pod-wide metrics might not capture tracing data for specific requests.\nD is not correct as installing tcpdump on GKE nodes is not a recommended practice.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You need to containerize a web application that will be hosted on Google Cloud behind a global load balancer with SSL certificates. You don't have the time to develop authentication at the application level, and you want to offload SSL encryption and management from your application. You want to configure the architecture using managed services where possible. What should you do?",
+        "options": [
+            "Host the application on GKE, and use Identity-Aware Proxy (IAP) with Cloud Load Balancing and Google-managed certificates.",
+            "Host the application on GKE, and deploy an NGINX Ingress Controller to handle authentication.",
+            "Host the application on GKE, and deploy cert-manager to manage SSL certificates.",
+            "Host the application on Compute Engine, and configure Cloud Endpoints for your application."
+        ],
+        "answer": [
+            "A"
+        ],
+        "explanation": "A is correct because it uses the most managed services (GKE, IAP, and CLB with Google-managed certificates).\nB is not correct because NGINX Ingress doesn't handle SSL certificate rotation\nC is not correct because it doesn't handle authentication for the application, only SSL certification rotation.\nD is not correct because while it's technically possible to run containers on Compute Engine, the better solution is to use GKE for containers.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You manage a microservice-based ecommerce platform on Google Cloud that sends confirmation emails to a third-party email service provider using a Cloud Run function. Your company just launched a marketing campaign, and some customers are reporting that they have not received order confirmation emails. You discover that the services triggering the Cloud Run function are receiving HTTP 500 errors. You need to change the way emails are handled to minimize email loss. What should you do?",
+        "options": [
+            "Increase the Cloud Run function's timeout to nine minutes.",
+            "Configure the sender application to publish the outgoing emails in a message to a Pub/Sub topic. Update the Cloud Run function configuration to consume the Pub/Sub queue.",
+            "Configure the sender application to retry the execution of the Cloud Run function every one second if a request fails.",
+            "Configure the sender application to write emails to Memorystore and then trigger the Cloud Run function. When the function is triggered, it reads the email details from Memorystore and sends them to the email service."
+        ],
+        "answer": [
+            "B"
+        ],
+        "explanation": "A is not correct because increasing the timeout will not fix the issue. The issue is caused by the rapid increase in inbound traffic and the requests timing out while waiting for new Cloud Run function instances to be created.\nB is correct because it will decouple the Cloud Run functions from the microservices sending emails and will allow Cloud Run functions to scale at their own pace.\nC is not correct because this will not decouple the applications. Although this is possible, a number of microservices might trigger the ‘email' Cloud Run function. Changing all these microservices will introduce code duplication, require development effort, and use unnecessary compute cycles.\nD is not correct because this does not solve the problem. Rapid increase of traffic will again result in similar scaling challenges.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You are developing a web application that contains private images and videos stored in a Cloud Storage bucket. Your users are anonymous and do not have Google Accounts. You want to use your application-specific logic to control access to the images and videos. How should you configure access?",
+        "options": [
+            "Generate a signed URL that grants read access to the bucket. Allow users to access the URL after authenticating through your web application.",
+            "Configure Identity-Aware Proxy (IAP) to authenticate users into the web application. Allow users to access the bucket after authenticating through IAP.",
+            "Grant the Storage Object Viewer IAM role to allUsers. Allow users to access the bucket after authenticating through your web application.",
+            "Cache each web application user's IP address to create a named IP list using Google Cloud Armor. Create a Google Cloud Armor security policy that allows users to access the backend bucket."
+        ],
+        "answer": [
+            "A"
+        ],
+        "explanation": "A is correct because Cloud Storage is designed to store unstructured data like images and videos. In some scenarios, you might not want to require your users to have a Google Account in order to access Cloud Storage, but you still want to control access using your application-specific logic. The way to address this use case is to provide a signed URL to a user, which gives the user read, write, or delete access to that resource for a limited time.\nB is incorrect because IAP only allows users with correct IAM access to authenticate. In this case, our users are anonymous.\nC is incorrect because it gives unnecessary access to the public. \nD is incorrect because it's unnecessarily complicated, and IP addresses are an unreliable resource.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You work on an application that relies on Cloud Spanner as its main datastore. New application features have occasionally caused performance regressions. You want to prevent performance issues by running an automated performance test with Cloud Build for each commit made. If multiple commits are made at the same time, the tests might run concurrently. What should you do?",
+        "options": [
+            "Create a project with a Cloud Spanner instance and the required data. Adjust the Cloud Build build file to automatically restore the data to its previous state after the test is complete.",
+            "Create a new project with a random name for every build. Load the required data. Delete the project after the test is complete.",
+            "Create a new Cloud Spanner instance for every build. Load the required data. Delete the Cloud Spanner instance after the test is complete.",
+            "Start the Cloud Spanner emulator locally. Load the required data. Shut down the emulator after the test is complete."
+        ],
+        "answer": [
+            "C"
+        ],
+        "explanation": "A is not correct because Cloud Build can run builds in parallel. Multiple commits from multiple devs might cause multiple builds to run simultaneously, potentially affecting the results.\nB is not correct because creating projects is rate limited and a highly privileged operation within an organization.\nC is correct because it provides the test isolation needed to detect performance issues.\nD is not correct because the emulator does not have the same scalability / performance characteristics as the real service.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You need to deploy an internet-facing microservices application to GKE. You want to validate new features using the A/B testing method. You have the following requirements for deploying new container image releases:\n     1. There is no downtime when new container images are deployed.     \n     2. New production releases are tested and verified using a subset of production users.\n     What should you do?",
+        "options": [
+            "1. Configure your CI/CD pipeline to update the Deployment manifest file by replacing the container version with the latest version. 2. Recreate the Pods in your cluster by applying the Deployment manifest file. 3. Validate the application's performance by comparing its functionality with the previous release version, and roll back if an issue arises.",
+            "1. Install Cloud Service Mesh on your GKE cluster. 2. Create two Deployments on the GKE cluster, and label them with different version names. 3. Configure a weight-based traffic splitting action to send a small percentage of traffic to the Deployment that references the new version of the application.",
+            "1. Create a second namespace on GKE for the new release version. 2. Create a Deployment configuration for the second namespace with the desired number of Pods. 3. Deploy new container versions in the second namespace. 4. Update the Ingress configuration to route traffic to the namespace with the new container versions.",
+            "1. Implement a rolling update pattern by replacing the Pods gradually with the new release version. 2. Validate the application's performance for the new subset of users during the rollout, and roll back if an issue arises."
+        ],
+        "answer": [
+            "B"
+        ],
+        "explanation": "A is not correct because the approach would not allow testing the new release with a subset of users at the same time as having the previous release in place.\nB is correct because Cloud Service Mesh traffic management is a convenient tool to implement routing rules for A/B testing. Reference: https://cloud.google.com/service-mesh/docs/service-routing/advanced-traffic-management\nC is not correct because the approach would not allow testing the new release with a subset of users at the same time as having the previous release in place.\nD is not correct because the deployment pattern does not allow to reliably test a new version with a subset of production users while the previous release is still in place.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "Your team is writing a backend application to implement the business logic for an interactive voice response (IVR) system that will support a payroll application.\n     The IVR system has the following technical characteristics:\n     - Each customer phone call is associated with a unique IVR session.\n     - The IVR system creates a separate persistent gRPC connection to the backend for each session. \n     - If the connection is interrupted, the IVR system establishes a new connection, causing a slight latency for that call. \n     \n     \n     You need to determine which compute environment should be used to deploy the backend application. Using current call data, you determine that:\n     - Call duration ranges from 1 to 30 minutes.\n     - Calls are typically made during business hours.\n     - There are significant spikes of calls around certain known dates (e.g., pay days), or when large payroll changes occur.\n     \n     \n     You want to minimize cost, effort, and operational overhead. Where should you deploy the backend application?",
+        "options": [
+            "Cloud Run",
+            "Cloud Run functions",
+            "GKE cluster in Standard mode",
+            "Compute Engine"
+        ],
+        "answer": [
+            "A"
+        ],
+        "explanation": "A is correct because Cloud Run supports sessions of up to 60 minutes, supports gRPC, scales to zero and is zero-ops.\nB is not correct because Cloud Run functions are limited to 9 minutes of run time, and Cloud Run functions don't support gRPC.\nC is not correct because GKE Standard will have higher costs and higher management overhead.\nD is not correct because Compute Engine has higher costs and higher management overhead.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You are developing a new application. You want the application to be triggered only when a given file is updated in your Cloud Storage bucket. Your trigger might change, so your process must support different types of triggers. You want the configuration to be simple so that multiple team members can update the triggers in the future. What should you do?",
+        "options": [
+            "Configure a Cloud Run function that executes your application and is triggered when an object is updated in Cloud Storage.",
+            "Create an Eventarc trigger that monitors your Cloud Storage bucket for a specific filename, and set the target as Cloud Run.",
+            "Configure a Firebase function that executes your application and is triggered when an object is updated in Cloud Storage.",
+            "Configure Cloud Storage events to be sent to Pub/Sub, and use Pub/Sub events to trigger a Cloud Build job that executes your application."
+        ],
+        "answer": [
+            "B"
+        ],
+        "explanation": "A is not correct because you can't filter by filenames; it will send all changes made to the bucket.\nB is correct because Eventarc supports flexible filters and you can create triggers based on filename patterns.\nC is not correct because you can't filter by filenames; it will send all changes to the bucket.\nD is not correct because even though you can filter by different names, the configuration has multiple levels of triggers which is overly complicated.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You are a developer at a large organization. You have an application written in Go running in a production GKE cluster. You need to add a new feature that requires access to BigQuery. You want to grant BigQuery access to your GKE cluster following Google-recommended best practices. What should you do?",
+        "options": [
+            "Create a Google service account with BigQuery access. Add the JSON key to Secret Manager, and use the Go client library to access the JSON key.",
+            "Create a Google service account with BigQuery access. Add the Google service account JSON key as a Kubernetes secret, and configure the application to use this secret.",
+            "Create a Google service account with BigQuery access. Add the Google service account JSON key to Secret Manager, and use an init container to access the secret for the application to use.",
+            "Create a Google service account and a Kubernetes service account. Configure Workload Identity on the GKE cluster, and reference the Kubernetes service account on the application Deployment."
+        ],
+        "answer": [
+            "D"
+        ],
+        "explanation": "A is not correct because it is not a recommended best practice with GKE, however when using Secrets Manager outside of GKE this would be the recommended approach.\nB is not correct because secret data in GKE is not encrypted, just obfuscated, so storing secrets in this way is a security risk.\nC is not correct because the recommended process when using Secret Manager, the best practice for this option we recommend using the Secret Manager API directly (using one of the provided client libraries, or by following the REST or gRPC documentation).\nD is correct. This is the best way to consume Google Cloud services without having to pass credential variables around.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You are developing a flower ordering application. Currently you have three microservices: \n     - Order Service (receives the orders)\n     - Order Fulfillment Service (processes the orders)\n     - Notification Service (notifies the customer when the order is filled)\n     \n     \n     You need to determine how the services will communicate with each other. You want incoming orders to be processed quickly, and you need to collect order information for fulfillment. You also want to make sure orders are not lost between your services and are able to communicate asynchronously. How should the requests be processed?",
+        "options": [
+            "Order request → Order Service → Order Fulfillment Service → Notification Service",
+            "Order request → Order Service → Cloud Storage bucket → Order Fulfillment Service → Cloud Storage bucket → Notification Service",
+            "Order request → Order Service → Firestore database → Order Fulfillment Service → Firestore database → Notification Service",
+            "Order request → Order Service → Pub/Sub queue → Order Fulfillment Service → Firestore database → Pub/Sub queue → Notification Service"
+        ],
+        "answer": [
+            "D"
+        ],
+        "explanation": "A is not correct because without using a queuing service, orders may be lost if a service is broken.\nB is not correct because it uses a blob storage to trigger events and to store orders. This puts more responsibility on each service to make sure orders are fulfilled, and communication would not be asynchronous.\nC is not correct because using a NoSQL DB as a queuing service would not make it asynchronous communication between the services. Some services would have to constantly poll to get new orders.\nD is correct because it uses Pub/Sub for inter-service communication which is asynchronous, and Firestore is a NoSQL DB for storing orders.",
+        "questionImages": [],
+        "optionImages": [
+            "/assets/pcd/q-10-option-1.png",
+            "/assets/pcd/q-10-option-2.png",
+            "/assets/pcd/q-10-option-3.png",
+            "/assets/pcd/q-10-option-4.png"
+        ]
+    },
+    {
+        "question": "You are developing a Java Web Server that needs to interact with the Cloud Storage API on your users' behalf. Users should be able to authenticate to the Cloud Storage API using their Google identities. Which workflow should you implement in your web application?",
+        "options": [
+            "1. When a user arrives at your application, prompt them for their Google username and password. 2. Store an SHA password hash in your application's database along with the user's username. 3. The application authenticates to the Cloud Storage API using HTTPs requests with the user's username and password hash in the Authorization request header.",
+            "1. When a user arrives at your application, prompt them for their Google username and password. 2. Forward the user's username and password in an HTTPS request to the Google authorization server, and request an access token. 3. The Google server validates the user's credentials and returns an access token to the application. 4. The application uses the access token to call the Cloud Storage API.",
+            "1. When a user arrives at your application, route them to an Oauth consent screen with a list of requested permissions that prompts the user to sign in with SSO to their Google Account. 2. After the user signs in and provides consent, your application receives an authorization code from a Google server. 3. The Google server returns the authorization code to the user, which is stored in the browser's cookies. 4. The user authenticates to the Cloud Storage API using the authorization code in the cookie.",
+            "1. When a user arrives at your application, route them to an Oauth consent screen with a list of requested permissions that prompts the user to sign in with SSO to their Google Account. 2. After the user signs in and provides consent, your application receives an authorization code from a Google server. 3. The application requests a Google Server to exchange the authorization code with an access token. 4. The Google server responds with the access token that is used by the application to call the Cloud Storage API."
+        ],
+        "answer": [
+            "D"
+        ],
+        "explanation": "A is incorrect because it is not a best practice and discouraged to prompt a user directly for Google credentials.\nB is incorrect because it is not a best practice and discouraged to prompt a user directly for Google credentials.\nC is incorrect because the web application needs to interact with the Google API and cannot use client-side credentials to do that from the web server.\nD is correct because it accurately describes the OAuth 2.0 flow to authenticate a user to the Cloud Storage API (Reference: https://developers.google.com/identity/protocols/oauth2#scenarios).",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You have an application running on GKE. The application is currently using a logging library and is outputting to standard output. You need to export the logs to Cloud Logging, and you need the logs to include metadata about each request. You want to use the simplest method to accomplish this. What should you do?",
+        "options": [
+            "Update your application to output logs in JSON format, and add the necessary metadata to the JSON.",
+            "Change your application's logging library to the Cloud Logging library, and configure your application to export logs to Cloud Logging.",
+            "Install the Fluent Bit agent on each of your GKE nodes, and have the agent export all logs from /var/log.",
+            "Update your application to output logs in CSV format, and add the necessary metadata to the CSV."
+        ],
+        "answer": [
+            "A"
+        ],
+        "explanation": "A is correct because it's the easiest way to get a rich format into Cloud Logging. GKE automatically forwards logs sent to stdout to Cloud Logging. As long as it has the right JSON format, Cloud Logging will ingest the rich message\nB is not correct because it would require a lot of extra work to replace the library, and replicate the extra information (such as pod name) that the GKE logs exporter automatically provides.\nC is not correct because this is only needed for pods (normally special/privileged pods) that write directly to the GKE file system.\nD is not correct because Cloud Logging doesn't support ingesting CSV.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You are a developer at a financial institution. You use Cloud Shell to interact with Google Cloud services. User data is currently stored on an ephemeral disk; however, a new company policy mandates that you can no longer store sensitive information on an ephemeral disk. You need to implement a new storage solution for your user data. You want to minimize code changes. Where should you store your user data?",
+        "options": [
+            "Store user data on a Cloud Shell home disk, and log in at least every 120 days to prevent its deletion.",
+            "Store user data on a persistent disk in a Compute Engine instance.",
+            "Store user data in a Cloud Storage bucket.",
+            "Store user data in BigQuery tables."
+        ],
+        "answer": [
+            "B"
+        ],
+        "explanation": "A is not correct because the disk might be deleted if the developer is not logging in regularly.\nB is correct because it would be the least complex way to achieve the goal.\nC is not correct because it would require updating your application.\nD is not correct because BigQuery storage is best for relational or JSON data, not unstructured files.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "Your team is developing unit tests for Cloud Run function code. The source code is stored in a Cloud Source Repositories repository. You are responsible for implementing the tests. Only a specific service account has the necessary permissions to deploy the code to Cloud Run functions. You want to ensure that the code cannot be deployed without first passing the tests. How should you configure the unit testing process?",
+        "options": [
+            "Configure Cloud Build to deploy the Cloud Run function. If the code passes the tests, a deployment approval is sent to you.",
+            "Configure Cloud Build to deploy the Cloud Run function, using the specific service account as the build agent. Run the unit tests after successful deployment.",
+            "Configure Cloud Build to run the unit tests. If the code passes the tests, the developer deploys the Cloud Run function.",
+            "Configure Cloud Build to run the unit tests, using the specific service account as the build agent. If the code passes the tests, Cloud Build deploys the Cloud Run function."
+        ],
+        "answer": [
+            "D"
+        ],
+        "explanation": "A is not correct since you will not have the necessary permissions to deploy the code without using the specific service account as the Build Agent. \nB is not correct since you are deploying the code before testing it.\nC is not correct. Even if you are testing all the code, if the developers are responsible for deploying the code, they could deploy code that failed on Cloud Build. Plus, Cloud Build wouldn't have the necessary permissions to deploy the code without using the specific service account as the Build Agent.\nD is correct since the same Cloud Build will run the unit tests and deploy the code, ensuring that only the approved code is deployed. Plus, since it is using the specific service account as the build agent, Cloud Build will have the correct permissions.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "",
+        "options": [
+            "Add the --cache-from argument to the Docker build step in your build config file.",
+            "Deploy a new Docker registry in a VPC, and use Cloud Build worker pools inside the VPC to run the build pipeline.",
+            "Store image artifacts in a Cloud Storage bucket in the same region as the Cloud Run instance.",
+            "Remove the step that pushes the container to Artifact Registry."
+        ],
+        "answer": [
+            "A"
+        ],
+        "explanation": "A is correct because specifying a cached image is a valid method to speed up subsequent builds (https://cloud.google.com/build/docs/speeding-up-builds#using_a_cached_docker_image)\nB is not correct because running Cloud Build with private worker pools in a VPC does not speed up build tasks, specifically not in this case, since neither the code repository nor Cloud Run are hosted in the VPC.\nC is not correct because Cloud Run requires container images to be present in a valid Artifact Registry.\nD is not correct because Cloud Run requires container images to be present in a valid Artifact Registry.",
+        "questionImages": [
+            "/assets/pcd/q-15-question-1.png"
+        ],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You are planning to add unit tests to your application. You need to be able to assert that published Pub/Sub messages are processed by your subscriber in order. You want the unit tests to be cost-effective and reliable. What should you do?",
+        "options": [
+            "Create a topic and subscription for each tester.",
+            "Implement a mocking framework.",
+            "Use the Pub/Sub emulator.",
+            "Add a filter by tester to the subscription."
+        ],
+        "answer": [
+            "C"
+        ],
+        "explanation": "A is not correct because you would incur additional costs.\nB is not correct because mocking will not simulate Pub/Sub behavior.\nC is correct because it enables isolated tests without additional cost.\nD is not correct because you would incur additional costs.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "Before promoting your new application code to production, you want to conduct testing across a variety of different users. Although this plan is risky, you want to test the new version of the application with production users and you want to control which users are forwarded to the new version of the application based on their operating system. If bugs are discovered in the new version, you want to roll back the newly deployed version of the application as quickly as possible. What should you do?",
+        "options": [
+            "Deploy your application on Cloud Run. Use traffic splitting to direct a subset of user traffic to the new version based on the revision tag.",
+            "Deploy your application on Compute Engine. Use Traffic Director to direct a subset of user traffic to the new version based on predefined weights.",
+            "Deploy your application on GKE with Cloud Service Mesh. Use traffic splitting to direct a subset of user traffic to the new version based on the user-agent header.",
+            "Deploy your application on Cloud Run. Use traffic splitting to direct a subset of user traffic to a list of revisions with specified weights."
+        ],
+        "answer": [
+            "C"
+        ],
+        "explanation": "A is not correct because the revision tag is just a Cloud Run label and doesn't link to users.\nB is not correct because the weight split is not flexible and users are chosen randomly.\nC is correct because it provides the most control - you can choose which user types are sent to the new version.\nD is not correct because the revisions are static; they are not tied to users.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You are responsible for deploying a new API. That API will have three different URL paths: \n     - https://yourcompany.com/students\n     - https://yourcompany.com/teachers\n     - https://yourcompany.com/classes\n     \n     \n     You need to configure each API URL path to invoke a different function in your code. What should you do?",
+        "options": [
+            "Create three Cloud Run functions as three backend services exposed using an HTTPS load balancer.",
+            "Create one Cloud Run function exposed directly.",
+            "Create one Cloud Run function as a backend service exposed using an HTTPS load balancer.",
+            "Create three Cloud Run functions exposed directly."
+        ],
+        "answer": [
+            "A"
+        ],
+        "explanation": "A is correct since you will need an HTTPS Load Balancer to handle the different paths on a custom domain.\nB is not correct since only one entry point is allowed per Cloud Run functions.\nC is not correct. You must have only one entry point per Cloud Run function, so you would need 3 Cloud Run functions. However, custom domains are not available on Cloud Run functions.\nD is not correct since you are not able to have custom domains on Cloud Run function, neither paths.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You are developing an event-driven application. You have created a topic to receive messages sent to Pub/Sub. You want those messages to be processed in real time. You need the application to be independent from any other system and only incur compute costs when new messages arrive. You want to configure the simplest and most efficient architecture. What should you do?",
+        "options": [
+            "Deploy your code on Cloud Run functions. Use a Pub/Sub trigger to process new messages in the topic.",
+            "Deploy your code on Cloud Run functions. Use a Pub/Sub trigger to invoke the Cloud Run function. Use the Pub/Sub API to create a pull subscription to the Pub/Sub topic and read messages from it.",
+            "Deploy the application on Compute Engine. Use a Pub/Sub push subscription to process new messages in the topic.",
+            "Deploy the application on GKE. Use the Pub/Sub API to create a pull subscription to the Pub/Sub topic and read messages from it."
+        ],
+        "answer": [
+            "A"
+        ],
+        "explanation": "A is correct because Cloud Functions with a Pub/Sub trigger will run as soon as a new message arrives (Push) and it will only have a cost if new messages arrive at the topic.\nB is not correct. You should use the PubSubMessage present on the request. Using the client library with this approach can lead to duplicated processing.\nC is not correct since one of the requirements is to only pay for compute processing time when messages arrive. It's also a more complex approach.\nD is not correct since one of the requirements is to only pay for compute processing time when messages arrive. It's also a more complex approach.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "Your team has created an application that is deployed in a single GKE cluster. The application is split into two different Deployments, each with their own Service and accessed using a different HTTP path. \n     A legacy client running on-premises needs to access the application through Cloud Interconnect through a single IP address. How should you expose the application? (choose two)",
+        "options": [
+            "Create a Gateway with the Gateway Class Name: gke-l7-rilb specification.",
+            "Create a Service with the networking.gke.io/load-balancer-type: \"Internal\" annotation.",
+            "Create a Service of type LoadBalancer.",
+            "Create a Service of type NodePort.",
+            "Create a Service with a selector that matches both Deployments.",
+            "Create a HTTPRoute pointing to both Services."
+        ],
+        "answer": [
+            "A",
+            "F"
+        ],
+        "explanation": "A is correct because a Gateway class with an internal HTTP load balancer is most suited for HTTP applications that are accessed internally (through the interconnect).\nB is not correct because an internal Service can't do URL-based routing. \nC is not correct because a load balancer will be required for each Deployment, resulting in two IPs.\nD is not correct because a NodePort will result in a port open across all nodes (x2 for the second Deployment).\nE is not correct because selecting both Deployments will cause the client to randomly hit one of the two Deployments.\nF is correct because it allows mapping the two Deployments into a single IP according to the path each Deployment runs on. This single frontend will expose a single IP for both Deployments.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You are developing an application using different microservices that must remain internal to the cluster. You want the ability to configure each microservice with a specific number of replicas. You also want the ability to address a specific microservice from any other microservice in a uniform way, regardless of the number of replicas the microservice scales to. You plan to implement this solution on GKE. What should you do?",
+        "options": [
+            "Deploy each microservice as a Deployment. Expose the Deployment in the cluster using a Service, and use the Service DNS name to address it from other microservices within the cluster.",
+            "Deploy each microservice as a Deployment. Expose the Deployment in the cluster using an Ingress, and use the Ingress IP address to address the Deployment from other microservices within the cluster.",
+            "Deploy each microservice as a Pod. Expose the Pod in the cluster using a Service, and use the Service DNS name to address the microservice from other microservices within the cluster.",
+            "Deploy each microservice as a Pod. Expose the Pod in the cluster using an Ingress, and use the Ingress IP address to address the Pod from other microservices within the cluster."
+        ],
+        "answer": [
+            "A"
+        ],
+        "explanation": "A is correct because the Service will have a DNS entry inside the cluster that other microservices can use to address the pods of the Deployment that the Service is targeting.\nB is not correct because an Ingress exposes a Service using an external or internal HTTP(s) load balancer, and it does not apply directly to a Deployment.\nC is not correct because a Pod is a single instance of the microservice, whereas a Deployment can be configured with a number of replicas.\nD is not correct because it combines the mistakes of options B and C.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "Your application is running as a container in a GKE cluster. You need to add a secret to your application using a secure approach that prevents the secret being revealed by calls to the Kubernetes API server. What should you do?",
+        "options": [
+            "Create a Kubernetes Secret, and pass the Secret as an environment variable to the container.",
+            "Enable GKE Application-layer Secrets Encryption on the cluster using a Cloud Key Management Service (KMS) key.",
+            "Store the Secret in Cloud KMS. Create a Google service account to read the Secret from Cloud KMS. Export the service account key in JSON format, and mount the JSON file on the container as a ConfigMap volume which can read the Secret from Cloud KMS.",
+            "Store the Secret in Secret Manager. Create a Google service account to read the Secret from Secret Manager. Create a Kubernetes service account to run the container. Use Workload Identity to authenticate as the Google service account."
+        ],
+        "answer": [
+            "D"
+        ],
+        "explanation": "A is not correct because a Kubernetes Secret only encodes the string, and anyone who can read the secret will be able to decode it.\nB is not correct because GKE Application-layer Secrets Encryption still presents the Secret as a base64-encoded string from the Kubernetes API server.\nC is not correct, because Cloud KMS is used to store the encryption keys, not the actual Secret. You are also passing in the Google service account key as a volume, which anyone can read if they can read Secrets.\nD is correct because it offers a secure service to store the Secret and also a secure approach to obtaining the Secret with Workload Identity.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You manage a microservices application on GKE using Istio. You secure the communication channels between your microservices by implementing an Istio AuthorizationPolicy, a Kubernetes NetworkPolicy, and mTLS on your GKE cluster. You discover that HTTP requests between two Pods to specific URLs fail, while other requests between the pods to other URLs succeed. What is the cause of the connection issue?",
+        "options": [
+            "A Kubernetes NetworkPolicy resource is blocking HTTP traffic between the Pods.",
+            "The Pod initiating the HTTP requests is attempting to connect to the target Pod via an incorrect TCP port.",
+            "The AuthorizationPolicy of your cluster is blocking HTTP requests for specific paths within your application.",
+            "The cluster has mTLS configured in permissive mode, but the Pod's sidecar proxy is sending unencrypted traffic in plain text."
+        ],
+        "answer": [
+            "C"
+        ],
+        "explanation": "A is not correct because Kubernetes NetworkPolicy resources allow you to block HTTP traffic between groups of pods but not for selected paths. (https://kubernetes.io/docs/concepts/services-networking/network-policies/).\nB is not correct because if the client pod is using an incorrect port to communicate with the server, pod requests will time out for all URL paths.\nC is correct because an Istio Authorization policy allows you to block HTTP methods between pods for specific URL paths (https://istio.io/latest/docs/tasks/security/authorization/authz-http/). \nD is not correct because mTLS configuration using Istio should not cause HTTP requests to fail. In permissive mode (default configuration), a service can accept both plain text and mTLS encrypted traffic (https://istio.io/latest/docs/tasks/security/authentication/mtls-migration/).",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You are developing a microservice-based application that will run on GKE. Some of the services need to access different Google Cloud APIs. How should you set up authentication of these services in the cluster following Google-recommended best practices? (choose two)",
+        "options": [
+            "Use the service account attached to the GKE node.",
+            "Enable Workload Identity on the cluster.",
+            "Access the Google service account keys from Secret Manager.",
+            "Store the Google service account keys in Secret Manager.",
+            "Use gcloud to bind the Google service accounts and the Kubernetes service accounts using roles/iam.workloadIdentityUser."
+        ],
+        "answer": [
+            "B",
+            "E"
+        ],
+        "explanation": "A is incorrect. While it could work, all the services are using the same service account, there is no separation of permissions, and no detailed logging.\nB and E together connect GKE and Google service accounts, so GKE can authenticate a service with a Google service account.\nC is incorrect. While this is feasible, it's not the recommended practice for workload identity because of the mandatory key rotation of the service accounts.\nD is incorrect. While this is feasible, it's not the recommended practice for workload identity because of the mandatory key rotation of the service accounts.\nE and B together connect GKE and Google service accounts, so GKE can authenticate a service with a Google service account.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "Your company's product team has a new requirement based on customer demand to autoscale your stateless and distributed service running in a GKE cluster. You want to find a solution that minimizes changes because this feature will go live in two weeks. What should you do?",
+        "options": [
+            "Deploy a Vertical Pod Autoscaler, and scale based on the CPU load.",
+            "Deploy a Vertical Pod Autoscaler, and scale based on a custom metric.",
+            "Deploy a Horizontal Pod Autoscaler, and scale based on the CPU load.",
+            "Deploy a Horizontal Pod Autoscaler, and scale based on a custom metric."
+        ],
+        "answer": [
+            "C"
+        ],
+        "explanation": "A. Incorrect: This doesn't help with a distributed application.\nB. Incorrect: This would work, but would require Cloud Monitoring integration and possible application modification. This would also not apply to a distributed application.\nC. Correct: This will require the least number of changes to the code and fits the requirements.\nD. Incorrect: This would work, but would require Cloud Monitoring integration and possible application modification.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "Your team is developing an ecommerce platform for your company. Users will log in to the website and add items to their shopping cart. Users will be automatically logged out after 30 minutes of inactivity. When users log back in, their shopping cart should be available. How should you store users' session and shopping cart information while following Google-recommended best practices?",
+        "options": [
+            "Store the session and shopping cart information in local memory and enable cookie-based session affinity in a global external HTTP(S) load balancer.",
+            "Store the shopping cart information in an object on Cloud Storage where the object name is the session identifier.",
+            "Store the session and shopping cart information in BigQuery.",
+            "Store the session information in Memorystore for Redis, and store the shopping cart information in Firestore."
+        ],
+        "answer": [
+            "D"
+        ],
+        "explanation": "A is not correct because local memory is lost on process termination, so you would lose the cart information.\nB is not correct because accessing a Cloud Storage bucket is slow and expensive for session information. This is not a Google Cloud best practice.\nC is not correct because BigQuery wouldn't be able to handle the frequent updates made to carts and sessions.\nD is correct because Memorystore is fast and a standard solution to store session information, and Firestore is ideal for small structured data such as a shopping cart. The user will be mapped to the shopping cart with a new session, if required.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You need to build a public API that authenticates, enforces quotas, and reports metrics for API callers. Which tool should you use to complete this architecture?",
+        "options": [
+            "Cloud Run",
+            "Cloud Endpoints",
+            "Identity-Aware Proxy",
+            "GKE Ingress for HTTP(S) Load Balancing"
+        ],
+        "answer": [
+            "B"
+        ],
+        "explanation": "A is incorrect. Cloud Run provides none of these features.\nB is correct. All three features, authentication, quotas/rate limiting and metrics are the core features of Cloud Endpoints.\nC is incorrect. IAP provides only authentication.\nD is incorrect. GKE Ingress provides none of these features.",
+        "questionImages": [
+            "/assets/pcd/q-27-question-1.png"
+        ],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You recently developed a web application to transfer log data to a Cloud Storage bucket daily. Authenticated users will regularly review logs from the prior two weeks for critical events. After that, logs will be reviewed once annually by an external auditor. Data must be stored for a period of no less than 7 years. You want to propose a storage solution that meets these requirements and minimizes costs. What should you do? (Choose two)",
+        "options": [
+            "Use the Bucket Lock feature to set the retention policy on the data.",
+            "Run a scheduled job to set the storage class to Coldline for objects older than 14 days.",
+            "Create a JSON Web Token (JWT) for users needing access to the Coldline storage buckets.",
+            "Create a lifecycle management policy to set the storage class to Coldline for objects older than 14 days.",
+            "Create a lifecycle management policy to set the storage class to Nearline for objects older than 14 days."
+        ],
+        "answer": [
+            "A",
+            "D"
+        ],
+        "explanation": "A is correct because the Bucket Lock feature will enforce the needed retention policy.\nB is incorrect because storage classes should be set with a lifecycle management policy.\nC is incorrect. JWTs can be used for authentication, but they should not be used to determine object lifecycle.\nD is correct because a lifecycle management policy will change the storage class to minimize costs.\nE is incorrect because Archive or Coldline storage is more economical than nearline if the data is only accessed annually.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You are developing an application that will store and access objects in a Cloud Storage bucket. To comply with regulatory requirements, you need to ensure that all objects are available for at least 7 years after their initial creation. Objects created more than 3 years ago are accessed very infrequently (less than once a year). You need to configure object storage while ensuring that storage cost is optimized. What should you do? (choose two)",
+        "options": [
+            "Set a retention policy on the bucket with a period of 7 years.",
+            "Include the creation time in the prefix name of the object, and use IAM Conditions to provide only read access to objects within 7 years of the object creation date.",
+            "Enable Object Versioning to prevent objects from being accidentally deleted for 7 years after object creation.",
+            "Create an object lifecycle policy on the bucket that moves objects from Standard Storage to Archive Storage after 3 years.",
+            "Implement a Cloud Run function that checks the age of each object in the bucket and moves the objects older than 3 years to a second bucket with the Archive Storage class. Use Cloud Scheduler to trigger the Cloud Run function on a daily schedule."
+        ],
+        "answer": [
+            "A",
+            "D"
+        ],
+        "explanation": "A is correct because Cloud Storage provides an option to configure a retention lifecycle rule.\nB is incorrect because it is not a recommended way to implement data retention requirements.\nC is incorrect because it does not guarantee that objects are not deleted within 7 years after object creation.\nD is correct because it's the easiest and recommended way to implement a storage lifecycle policy to move objects from Standard to Archive tier.\nE is incorrect because you do not require two buckets to store objects on two storage tiers.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You are developing a web application that will run on Google Cloud. The rate of the incoming user traffic is expected to be unpredictable, with no traffic on most days and large spikes on other days. You need the application to automatically scale up and down, and you need to minimize the cost associated with running the application. What should you do?",
+        "options": [
+            "Build the application with Firestore as the database. Deploy the application to Cloud Run.",
+            "Build the application with Firestore as the database. Deploy the application to a GKE Standard cluster.",
+            "Build the application with Cloud SQL as the database. Deploy the application to a GKE Autopilot cluster.",
+            "Build the application with Firestore as the database. Deploy the application to a Compute Engine managed instance group with autoscaling."
+        ],
+        "answer": [
+            "A"
+        ],
+        "explanation": "A is correct. Cloud Run supports scaling to zero. In addition, the cost for Firestore is storage only. So, when there is no traffic, there is zero operational cost.\nB is incorrect because GKE doesn't scale to zero.\nC is incorrect because GKE doesn't scale to zero. In addition there is a cost associated with running Cloud SQL.\nD is incorrect. The Compute Engine manages instances that do not scale to zero. It needs a minimum of one instance to be running.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "Your company's development teams want to use various open source operating systems in their container images. When images are published, you need to scan them for Common Vulnerabilities and Exposures (CVEs). The scanning process must not impact software development agility. You want to use managed services where possible. What should you do?",
+        "options": [
+            "Enable the Container Analysis API to conduct vulnerability scans on images in Artifact Registry.",
+            "Create a Cloud Run service that is triggered on a code check-in and scan the code for CVEs.",
+            "Disallow the use of non-commercially supported base images in your development environment.",
+            "Use Cloud Monitoring to review the output of Cloud Build to determine whether a vulnerable version has been used."
+        ],
+        "answer": [
+            "A"
+        ],
+        "explanation": "A is correct. The Container Analysis API enables image scanning to scan for CVEs from the following sources: Debian, Ubuntu, Alpine, Red Hat Enterprise Edition, and the National Vulnerability Database.\nB is incorrect. While this could work, it does not meet the criteria for a managed service\nC is incorrect. While this would work, it's counterproductive to an agile software development culture and may impede progress.\nD is incorrect. Cloud Monitoring could scan the logs but does not have insight into the Vulnerabilities.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "",
+        "options": [
+            "Select a virtual machine (VM) size with higher CPU for Cloud Build runs.",
+            "Deploy a Container Registry on a Compute Engine VM in a VPC, and use it to store the final images.",
+            "Cache the container images for subsequent builds using the --cache-from argument in your build config file.",
+            "Change the base image in the build file to ubuntu:latest, and install Python 3.7 using a package manager utility.",
+            "Store application source code on Cloud Storage, and configure the pipeline to use gsutil to download the source code."
+        ],
+        "answer": [
+            "A",
+            "C"
+        ],
+        "explanation": "A is correct because a high-CPU virtual machine type can increase the speed of your build.\nB is not correct because a Container Registry on a VM will not speed up the build.\nC is correct because the same container is used in subsequent steps for testing and to be pushed to the registry.\nD is not correct because an ubuntu container image will be significantly larger than the python:3.7-alpine image.\nE is not correct because storing the application source code on Cloud Storage does not decrease the time to build the application.",
+        "questionImages": [
+            "/assets/pcd/q-32-question-1.png"
+        ],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You have developed an application and want to host it on Cloud Run. This application writes log records as text in local files. You want the logs to be written to Cloud Logging while minimizing the amount of code you have to maintain. What should you do?",
+        "options": [
+            "Import the Cloud Logging library in your code and use it to write logs.",
+            "Use your programming language logger to write logs to Standard output (stdout) and Standard error (stderr) streams.",
+            "Expose the log files to www.mycompany.com/logs. Use a browser to manually download the files and upload them to Cloud Storage.",
+            "Using cron, schedule a job to copy the log files to Cloud Storage once a day."
+        ],
+        "answer": [
+            "B"
+        ],
+        "explanation": "A. This is incorrect. While it's technically possible to use the library, that would result in a lot of code to maintain.\nB. This is correct. Cloud Run has direct integration to Cloud Logging via stdout and stderr.\nC. This is incorrect. This task would have to be performed manually. Also this approach isn't the most secure.\nD. This is incorrect. While data can be copied to Cloud Storage buckets, this doesn't help us with our goal of storing log data within Cloud Logging.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You recently developed an application. You need to call the Cloud Storage API from a Compute Engine instance that doesn't have a public IP address. What should you do?",
+        "options": [
+            "Use Carrier Peering",
+            "Use VPC Network Peering",
+            "Use Shared VPC networks",
+            "Use Private Google Access"
+        ],
+        "answer": [
+            "D"
+        ],
+        "explanation": "A is not correct because Carrier Peering enables you to access Google applications, such as Google Workspace, by using a service provider to obtain enterprise-grade network services that connect your infrastructure to Google.\nB is not correct because VPC Network Peering enables you to peer VPC networks so that workloads in different VPC networks can communicate in a private RFC 1918 space. Traffic stays within Google's network and doesn't traverse the public internet.\nC is not correct because Shared VPC allows an organization to connect resources from multiple projects to a common VPC network so that they can communicate with each other securely and efficiently using internal IPs from that network.\nD is correct because Private Google Access is an option available for each subnetwork. When it is enabled, instances in the subnetwork can communicate with public Google API endpoints even if the instances don't have external IP addresses.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "Your application performs well when tested locally, but it runs significantly slower after you deploy it to a Compute Engine instance. You need to diagnose the problem with the least number of changes. What should you do?",
+        "options": [
+            "File a ticket with Cloud Support indicating that the application performs faster locally.",
+            "Use Cloud Debugger snapshots to look at a point-in-time execution of the application.",
+            "Use Cloud Profiler to determine which functions within the application take the longest amount of time.",
+            "Add logging commands to the application and use Cloud Logging to check where the latency problem occurs."
+        ],
+        "answer": [
+            "C"
+        ],
+        "explanation": "A is incorrect because the argument “it worked on my machine” but doesn't work on Google Cloud is never valid.\nB is incorrect because Debugger snapshots only lets us review the application at a single point in time.\nC is correct because it provides latency per function and historical latency information.\nD is incorrect because while it works it requires a lot of work and is not the clear, optimal choice.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You are developing an ecommerce web application that uses Cloud Run and Memorystore for Redis. When a user logs into the app, the application caches the user's information (e.g., session, name, address, preferences), which is stored for quick retrieval during checkout. While testing your application in a browser, you get a 502 Bad Gateway error. You have determined that the application is not connecting to Memorystore. What is the reason for this error?",
+        "options": [
+            "Your Memorystore for Redis instance was deployed without a public IP address.",
+            "You configured your Serverless VPC Access connector in a different region than your Cloud Run service.",
+            "The firewall rule allowing a connection between Cloud Run and Memorystore was removed during an infrastructure update by the DevOps team.",
+            "You configured your application to use a Serverless VPC Access connector on a different subnet in a different region than your Cloud Run service."
+        ],
+        "answer": [
+            "B"
+        ],
+        "explanation": "A is not correct because Cloud Run connects to Memorystore via the Serverless VPC Connector. Connections are over private networks. Public addresses are not required.\nB is correct. All of the components must be in the same region.\nC is not correct because for connectivity between Cloud Run and Memorystore all that is required is a Serverless VPN Connector.\nD is not correct. The Serverless VPC Connector is configured with a non-overlapping subnet that is not associated with the VPC.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "Your organization has recently begun an initiative to replatform their legacy applications onto GKE. You need to decompose a monolithic application into microservices. Multiple instances have read and write access to a configuration file, which is stored on a shared file system. You want to minimize the effort required to manage this transition, and you want to avoid rewriting the application code. What should you do?",
+        "options": [
+            "Create a new Cloud Storage bucket, and mount it via FUSE in the container.",
+            "Create a new persistent disk, and mount the volume as a shared PersistentVolume.",
+            "Create a new Filestore instance, and mount the volume as an nfs PersistentVolume.",
+            "Create a new ConfigMap and volumeMount to store the contents of the configuration file."
+        ],
+        "answer": [
+            "C"
+        ],
+        "explanation": "A is incorrect, because Cloud Storage FUSE does not support concurrency and file locking.\nB is incorrect, because a persistent disk PersistentVolume is not read-write-many. It can only be read-write once or read-many.\nC is correct, because it's the only managed, supported read-write-many storage option available for file-system access in GKE.\nD is incorrect, because the ConfigMap cannot be written to from the Pods.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You need to redesign the ingestion of audit events from your authentication service to allow it to handle a large increase in traffic. Currently, the audit service and the authentication service run in the same Compute Engine virtual machine. You plan to split each service into their own pool of Compute Engine VM instances and use Pub/Sub to send events from the authentication service to the audit service. \n     How should you set up the Pub/Sub topics and subscriptions to ensure that the system can handle a large volume of messages and can scale efficiently?",
+        "options": [
+            "Create one Pub/Sub topic. Create one pull subscription.",
+            "Create one Pub/Sub topic. Create one pull subscription per audit service instance.",
+            "Create one Pub/Sub topic. Create one push subscription.",
+            "Create one Pub/Sub topic per authentication service instance. Create one pull subscription per topic.",
+            "Create one Pub/Sub topic per authentication service instance. Create one push subscription per topic."
+        ],
+        "answer": [
+            "A"
+        ],
+        "explanation": "A is correct. This is the most flexible way to scale, allowing the authentication and audit services to be sized independently according to load.\nB is incorrect. This will cause messages to be duplicated, one copy per subscription.\nC is incorrect. This will allow the system to scale, but push subscriptions are less suited to handle large volumes of messages.\nD is incorrect. This will allow the system to scale, however each audit service will listen to all subscriptions.\nE. is incorrect. This will allow the system to scale, however it will require each audit service to listen to all subscriptions. Also push subscriptions are less suited to handle large volumes of messages.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "",
+        "options": [
+            "Modernize and deploy the code on App Engine flexible environment.",
+            "Modernize and deploy the code on Cloud Run.",
+            "Deploy the modernized application to an n1-standard-1 Compute Engine instance.",
+            "Ask the development team to rewrite the application to run as a container on GKE."
+        ],
+        "answer": [
+            "B"
+        ],
+        "explanation": "A is not correct. While this approach meets all of the requirements, it's not the lowest cost one. With App Engine Flexible there is always at least one instance online.\nB is correct. Cloud Run meets all of the requirements. It;s pay as you go designed to autoscale from 0-x instances, and has deployments that take seconds versus minutes. \nC is not correct. While this is a solution, it does not meet all of the requirements. A single instance would not scale automatically. Finally, to accomplish all of the requirements it would require additional effort and ongoing server administration, setup, etc.\nD is not correct. While this does meet all of the requirements, it's not the lowest cost one nor the least effort.",
+        "questionImages": [
+            "/assets/pcd/q-39-question-1.png"
+        ],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You are developing an application using a new programming language that does not have support for Cloud Client Libraries. Your application makes REST API calls to invoke Google Cloud services. The application runs on Cloud Run with an associated service account. You want to configure this service account to act as the authorization identity for the Google Cloud service calls. What should you do?",
+        "options": [
+            "Include an API key with the application and pass the value in the Authorization header.",
+            "Retrieve the access token from the metadata server and pass the value in the Authorization header.",
+            "Use an API key for the service account as the value of the GOOGLE_APPLICATION_CREDENTIALS environment variable.",
+            "Store the value for gcloud auth application-default print-access-token at startup in a file whose path is set in the GOOGLE_APPLICATION_CREDENTIALS environment variable."
+        ],
+        "answer": [
+            "B"
+        ],
+        "explanation": "A is not correct because an API key is not the same as an authorization token and would not be honored if passed in the Authorization header of an HTTP request.\nB is correct because the access token retrieved from the metadata server and passed in the Authorization header of an HTTP request to Google Cloud will be successful to present authentication as the service account.\nC is not correct because GOOGLE_APPLICATION_CREDENTIALS should be set to the name of a file that contains the access token, not the value of an API key.\nD is not correct because GOOGLE_APPLICATION_CREDENTIALS is used to point to a file containing an API key, not an access token.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You are creating a web application that writes a file to the user's Drive regardless of their account domain. The application will be hosted on Cloud Run. You need to configure the application to authenticate to the Google Drive API. What should you do?",
+        "options": [
+            "Use an OAuth Client ID with delegated domain-wide authority.",
+            "Use a service account with delegated domain-wide authority.",
+            "Use an OAuth Client ID and https://www.googleapis.com/auth/drive.file scope to obtain an access token for each user.",
+            "Use a service account and https://www.googleapis.com/auth/drive.file scope to generate a signed JSON Web Token (JWT)."
+        ],
+        "answer": [
+            "C"
+        ],
+        "explanation": "A is incorrect. OAuth Client IDs can't be granted domain-wide authority.\nB is incorrect. This wouldn't work for all users (only users on domains that have granted it delegated domain-wide authority.)\nC is correct. OAuth 2.0 web authorization will work with any user, while domain delegation only works for a single domain.\nD is incorrect. This wouldn't be writing to the user's drive. Also signed JWTs can't be used to authenticate to the Drive API.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "Your team has     developed a mobile web application where global users vote on popular     topics. For each topic, you expect a very high volume of votes during each     individual 30-minute voting window. You need to capture and count each     topic's votes within every 30 minute window. You also need to store the     votes for future analysis and reporting. What should you do?",
+        "options": [
+            "Save the votes to Memorystore, and use Cloud Run functions to insert the counts into BigQuery. Display the results in Google Data Studio.",
+            "Publish the votes to Pub/Sub, and use a Datafow pipeline to insert the counts and votes into BigQuery. Display the results in Google Data Studio.",
+            "Publish the votes to Pub/Sub, and use Cloud Run functions to insert the counts and votes into Cloud Storage. Display the results in Google Data Studio.",
+            "Use Firebase to authenticate the mobile users, and publish the votes directly to Firestore. Export the votes to a CSV file, and import it into Sheets for reporting."
+        ],
+        "answer": [
+            "B"
+        ],
+        "explanation": "A. Incorrect. Memorystore is not a persistent data store and can potentially lose votes cast.\nB. Correct. Pub/Sub supports the ingestion of millions of records per second and guarantees the delivery of the messages. Dataflow can aggregate votes within windows grouped by Topic. BigQuery should be used for analysis.\nC. Incorrect. Windowing and grouping with Cloud Run functions requires storing state in an intermediary datastore. Also storing the raw data in a blob store makes analysis with Data Studio inefficient.\nD. Incorrect. There are limits to the grouping and analysis operations that Google Sheets can perform.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You have written a     Cloud Run function in Node.js with source code stored in a Git repository.     You want any committed changes to the source code to be automatically     tested. You write a Cloud Build configuration that pushes the source code to     a uniquely named Cloud Run function, then calls the function as a test, and     then deletes the Cloud Run function as cleanup. You discover that if the     test fails, the Cloud Run function is not deleted. What should you     do?",
+        "options": [
+            "Change the order of the steps to delete the Cloud Run function before performing the test.",
+            "Include a waitFor option in the Cloud Build step that deletes the Cloud Run function test step as a required preceding step.",
+            "Have the Cloud Build step write the Cloud Run function results to a file and return 0. Add a step after the Cloud Run function deletion that checks whether the file contains the expected results and fails if it doesn't.",
+            "Have the Cloud Build test step set its outcome in an environment variable called result and return 0. Add a final step after the Cloud Run function deletion that checks whether the environment variable contains the expected results."
+        ],
+        "answer": [
+            "C"
+        ],
+        "explanation": "A is incorrect because if you delete a Cloud Run function you cannot test it.\n\nB is incorrect. The Cloud Build waitFor is used to synchronize steps. If a step identifies a previous step in a waitFor and the previous step fails then the Cloud Build as a whole will fail and the function won't be deleted.\n\nC is correct. There is a persistent file system that is shared between steps in a Cloud Build, so the correct steps should be:\n1. Deploy the Cloud Run function.\n2. Save the results of calling the Cloud Run function to a file.\n3. Delete the Cloud Run function.\n4. Test the content of the file.\nSince step 2 can now never fail, step 3 is executed, and step 4 defines the outcome of the build as a whole.\n\nD is incorrect. Environment variables exist locally in the container in which the step executes. When the step completes, the container is destroyed and takes its environment variables with it. These variables are thus not available in subsequent steps and hence can't be used as a communication between distinct steps.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You have deployed a     web application in a GKE cluster. You are reviewing the Cloud Monitoring     metrics and find that your cluster's CPU load fluctuates throughout the day.     To maximize performance while minimizing cost, you want the number of pods     and notes to automatically adjust. What should you do?",
+        "options": [
+            "Modify the managed instance group (MIG) to enable Autoscaling to configure max and min amount of nodes based on CPU load.",
+            "Enable Cluster Autoscaler on the GKE cluster, and configure the Horizontal Pod Autoscaler (HPA) to autoscale the workload based on CPU load.",
+            "Enable Cluster Autoscaler on the GKE cluster, and configure the HPA to autoscale the workloads based on a custom metric.",
+            "Modify the MIG to enable Autoscaling to configure max and min amount of nodes based on CPU load, and configure the Vertical Pod Autoscaler (VPA) to scale workloads based on CPU load."
+        ],
+        "answer": [
+            "B"
+        ],
+        "explanation": "A is not correct because you should not use Compute Engine's autoscaling feature on instance groups created by GKE.\nB is the recommended approach to autoscale a Kubernetes Deployment.\nC is not correct because CPU metrics are enabled by default and custom metrics are unnecessary.\nD is not correct because you should not use Compute Engine's autoscaling feature on instance groups created by GKE.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You have a Java     application running on Cloud Run. Your application's error messages do not     appear in the Error Reporting console. What should you do?",
+        "options": [
+            "Ensure that Cloud Monitoring client libraries are bundled with the Java application.",
+            "Verify that application logs are being written to the correct regional storage bucket.",
+            "Verify that application errors are being written to stderr.",
+            "Log exceptions using System.out.println."
+        ],
+        "answer": [
+            "C"
+        ],
+        "explanation": "A is not correct because no external libraries are required for error reporting in Cloud Run. \nB. is not correct because Error Reporting does not analyze logs stored in regional log buckets or logs routed to other projects.\nC is correct because errors must be written to stderr in Cloud Run to be recognized by Error Reporting. \nD is not correct because system.out.println outputs to stdout, not stderr.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "Your company has a     successful multi-player game that has become popular in the US. Now, it     wants to expand to other regions. It is launching a new feature that allows     users to trade points. This feature will work for users across the globe.     Your company's current MySQL backend is reaching the limit of the Compute     Engine instance that hosts the game. Your company wants to migrate to a     different database that will provide global consistency and high     availability across the regions. Which database should they choose?",
+        "options": [
+            "BigQuery",
+            "Cloud SQL",
+            "Cloud Spanner",
+            "Cloud Bigtable"
+        ],
+        "answer": [
+            "C"
+        ],
+        "explanation": "A is not correct because BigQuery can't be used as a transactional database.\nB is not correct because Cloud SQL doesn't provide high availability across regions.\nC is correct because only Cloud Spanner provides global consistency and availability.\nD is not correct because Cloud Bigtable doesn't provide global availability.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "Your application     that is deployed on Cloud Run receives a large amount of traffic. You are     concerned that deploying changes to the application could affect all users     negatively. You want to avoid full-scale load testing due to cost concerns,     but you still want to deploy new features as quickly as possible. Which     approach should you take?",
+        "options": [
+            "Schedule weekly load tests against the production application.",
+            "Use the local development environment to perform load testing outside Google Cloud.",
+            "Before allowing users to access new features, deploy as a new version and perform smoke tests. Then enable all users to access the new features.",
+            "Use traffic splitting to have a smaller part of the users test out new features, and slowly adjust traffic splitting until all users get the new features."
+        ],
+        "answer": [
+            "D"
+        ],
+        "explanation": "A is incorrect because there are patterns to perform A/B testing and reduce the need for regular independent load tests.\nB is incorrect because it does not accurately simulate the production environment.\nC is incorrect because smoke tests are still exposing all users to new features immediately as described.\nD is correct because traffic splitting allows real user testing without impacting all users and reduces load testing costs.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "Your website is     deployed on Compute Engine. Your marketing team wants to test conversion     rates between three different website designs. You are not able to make     changes to your application code. What should you do?",
+        "options": [
+            "Deploy the website on Cloud Run and use traffic splitting.",
+            "Deploy the website on Cloud Run as three separate revisions.",
+            "Deploy the website on Cloud Run functions as three separate functions.",
+            "Deploy the website on Cloud Run functions and implement custom code to show different designs."
+        ],
+        "answer": [
+            "A"
+        ],
+        "explanation": "A is correct because it allows routing traffic to a single domain and split traffic based on percentages.\nB is not correct because the domain name will change based on the revision. \nC and D are not correct because Cloud Run functions cannot be used to deploy websites.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "Your team is using     Cloud Run to write every Pub/Sub message to both a Cloud Storage object and     a BigQuery table. You want to minimize operational overhead. Which     architecture should you implement?",
+        "options": [
+            "",
+            "",
+            "",
+            ""
+        ],
+        "answer": [
+            "B"
+        ],
+        "explanation": "A is not correct because this will write half the messages to BigQuery and half to Cloud Storage, which doesn't meet the need.\nB is correct because each App Engine service will get its own message to write and can retry/fail independently.\nC is not correct because a failure in processing the message to one system can cause duplicate writes to BigQuery or Google Cloud Storage.\nD is not correct because it duplicates the message send charges and requires that the message be sent twice to two different topics, which increases costs, the need to manage an additional topic and complexities on the client.",
+        "questionImages": [
+            "/assets/pcd/q-49-question-1.png"
+        ],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "You are capturing     important audit activity in Cloud Logging. You need to read the information     from Cloud Logging to perform near real-time analysis of the logs. You will     have multiple processes performing different types of analysis on the     logging data. What should you do?",
+        "options": [
+            "Write an app to read the logs directly from the Cloud Logging API.",
+            "Set up a Cloud Logging sink to Pub/Sub, and read the logs from a Pub/Sub subscription.",
+            "Write a Cloud Function endpoint to read directly from the Cloud Logging API, and copy the logs over to Dataproc.",
+            "Set up a Cloud Logging sink to Cloud Storage, and read the logs from a Cloud Storage bucket."
+        ],
+        "answer": [
+            "B"
+        ],
+        "explanation": "A is not correct because the API has read limits and is not a suitable solution if you have multiple readers. (https://cloud.google.com/logging/quotas) \nB is correct because this solution is near real time. (https://cloud.google.com/logging/docs/export/using_exported_logs#pubsub-availability)\nC is not correct because it is not an efficient solution. (https://cloud.google.com/dataproc/docs/concepts/jobs/life-of-a-job\nD is not correct because this solution is not real time. (https://cloud.google.com/logging/docs/export/using_exported_logs#gcs-availability)",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    }
+]

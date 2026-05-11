@@ -163,16 +163,7 @@ export const CertificationSelector: React.FC<CertificationSelectorProps> = ({
                         </span>
                     </div>
                 </div>
-                <p className="cert-selector-desc">
-                    Validate your skills with Google Cloud certifications.
-                    Select a certification below to start studying with
-                    interactive flashcards.
-                </p>
             </header>
-
-            <h2 className="cert-selector-section-title">
-                Which certification is right for you?
-            </h2>
 
             <div className="tier-grid">
                 {tiers.map(tier => (
@@ -184,13 +175,6 @@ export const CertificationSelector: React.FC<CertificationSelectorProps> = ({
                     />
                 ))}
             </div>
-
-            <footer className="cert-selector-footer">
-                <p>
-                    Study smarter, not harder. Practice with flashcards designed
-                    to help you pass your Google Cloud certification exams.
-                </p>
-            </footer>
         </div>
     );
 };

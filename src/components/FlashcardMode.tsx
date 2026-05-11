@@ -200,6 +200,20 @@ export const FlashcardMode: React.FC<FlashcardModeProps> = ({
                             </div>
                         )}
                     </div>
+                    {currentQuestion.questionImages?.length ? (
+                        <div className="question-images">
+                            {currentQuestion.questionImages.map(
+                                (image, index) => (
+                                    <img
+                                        key={`${currentQuestion.id}-qimg-${index}`}
+                                        src={image}
+                                        alt=""
+                                        className="question-image"
+                                    />
+                                )
+                            )}
+                        </div>
+                    ) : null}
                     <p className="question-text">
                         {formatText(currentQuestion.question)}
                     </p>
@@ -214,7 +228,7 @@ export const FlashcardMode: React.FC<FlashcardModeProps> = ({
                         <p className="answer-text">
                             <strong>
                                 Correct Answer:{' '}
-                                {formatText(currentQuestion.answer)}
+                                {formatText(currentQuestion.answer.join(', '))}
                             </strong>
                         </p>
                         {hasExplanation(currentQuestion.explanation) && (

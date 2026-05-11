@@ -1,0 +1,93 @@
+version: '3'
+
+vars:
+  NPM: npm
+
+tasks:
+  default:
+    cmds:
+      - task: help
+
+  help:
+    desc: Show available commands
+    silent: true
+    cmds:
+      - echo "Google Cloud Certification Flashcards - Available Commands"
+      - echo ""
+      - echo "Development:"
+      - echo "  task dev            - Run the app in development mode"
+      - echo "  task build          - Build the app for production"
+      - echo "  task test           - Run tests"
+      - echo ""
+      - echo "Code Quality:"
+      - echo "  task lint           - Run linting and formatting across all files"
+      - echo "  task lint-check     - Check linting without fixing"
+      - echo "  task format         - Format code with prettier"
+      - echo "  task format-check   - Check formatting without fixing"
+      - echo ""
+      - echo "Setup:"
+      - echo "  task install        - Install dependencies"
+      - echo "  task setup          - Full setup (install deps + prepare git hooks)"
+      - echo "  task clean          - Clean build artifacts and node_modules"
+      - echo "  task quick-start    - Install dependencies and run in dev mode"
+
+  install:
+    desc: Install dependencies
+    cmds:
+      - "{{.NPM}} install"
+
+  setup:
+    desc: Full setup including git hooks
+    deps: [install]
+    cmds:
+      - "{{.NPM}} run prepare"
+
+  dev:
+    desc: Run the app in development mode
+    cmds:
+      - "{{.NPM}} start"
+
+  build:
+    desc: Build the app for production
+    cmds:
+      - "{{.NPM}} run build"
+      - echo "Build complete! Static files are in the 'build' directory."
+
+  lint:
+    desc: Run linting and formatting across all files
+    cmds:
+      - "{{.NPM}} run lint-and-format"
+
+  lint-check:
+    desc: Check linting without fixing
+    cmds:
+      - "{{.NPM}} run lint"
+
+  format:
+    desc: Format code with prettier
+    cmds:
+      - "{{.NPM}} run format"
+
+  format-check:
+    desc: Check formatting without fixing
+    cmds:
+      - "{{.NPM}} run format:check"
+
+  test:
+    desc: Run tests
+    cmds:
+      - "{{.NPM}} test"
+
+  clean:
+    desc: Clean build artifacts and node_modules
+    cmds:
+      - rm -rf build/
+      - rm -rf node_modules/
+      - rm -rf package-lock.json
+      - echo "Clean complete!"
+
+  quick-start:
+    desc: Install dependencies and run in development mode
+    deps: [install]
+    cmds:
+      - task: dev
