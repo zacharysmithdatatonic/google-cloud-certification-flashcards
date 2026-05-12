@@ -1,4 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import {
+    Box,
+    Stack,
+    Typography,
+    IconButton,
+    Button,
+    LinearProgress,
+    Card,
+    CardContent,
+    Divider,
+    Chip,
+} from '@mui/material';
 import { Question, QuestionPerformance } from '../types';
 import {
     CheckCircle,
@@ -193,19 +205,28 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
 
     if (!currentQuestion) {
         return (
-            <div className="review-container">
-                <div className="completion-message">
-                    <RotateCcw size={48} />
-                    <h2>Review Complete! Great job!</h2>
-                    <button
-                        onClick={() => window.location.reload()}
-                        className="btn btn-primary"
-                    >
-                        <RotateCcw size={16} />
-                        Start Over
-                    </button>
-                </div>
-            </div>
+            <Box sx={{ maxWidth: 720, mx: 'auto', px: 2 }}>
+                <Card>
+                    <CardContent>
+                        <Stack spacing={2} sx={{ alignItems: 'center' }}>
+                            <RotateCcw size={48} />
+                            <Typography
+                                variant="h5"
+                                sx={{ textAlign: 'center' }}
+                            >
+                                Review Complete! Great job!
+                            </Typography>
+                            <Button
+                                variant="contained"
+                                onClick={() => window.location.reload()}
+                                startIcon={<RotateCcw size={16} />}
+                            >
+                                Start Over
+                            </Button>
+                        </Stack>
+                    </CardContent>
+                </Card>
+            </Box>
         );
     }
 
@@ -215,196 +236,318 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
         selectedOptions.every(option => correctOptionIndexes.includes(option));
 
     return (
-        <div className="review-container">
-            <div className="mode-nav-bar navigation-controls">
-                <button
-                    onClick={handlePrevious}
-                    disabled={currentIndex === 0}
-                    className="nav-arrow"
-                    aria-label="Previous question"
-                >
-                    <ChevronLeft size={24} />
-                </button>
-                <span className="question-counter">
-                    Question {currentIndex + 1} of {questions.length}
-                </span>
-                <button
-                    onClick={handleNext}
-                    disabled={currentIndex === questions.length - 1}
-                    className="nav-arrow"
-                    aria-label="Next question"
-                >
-                    <ChevronRight size={24} />
-                </button>
-            </div>
-            <div className="progress-bar">
-                <div
-                    className="progress-fill"
-                    style={{
-                        width: `${((currentIndex + 1) / questions.length) * 100}%`,
+        <Box sx={{ maxWidth: 720, mx: 'auto', px: 2 }}>
+            <Stack spacing={2}>
+                <Stack
+                    direction="row"
+                    sx={{
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
                     }}
+                >
+                    <IconButton
+                        onClick={handlePrevious}
+                        disabled={currentIndex === 0}
+                        aria-label="Previous question"
+                    >
+                        <ChevronLeft size={24} />
+                    </IconButton>
+                    <Typography variant="body2" color="text.secondary">
+                        Question {currentIndex + 1} of {questions.length}
+                    </Typography>
+                    <IconButton
+                        onClick={handleNext}
+                        disabled={currentIndex === questions.length - 1}
+                        aria-label="Next question"
+                    >
+                        <ChevronRight size={24} />
+                    </IconButton>
+                </Stack>
+                <LinearProgress
+                    variant="determinate"
+                    value={((currentIndex + 1) / questions.length) * 100}
+                    sx={{ height: 6, borderRadius: 999 }}
                 />
-            </div>
-
-            <div className="review-card">
-                <div className="question-section">
-                    <div className="question-header-card">
-                        <h3>
-                            <HelpCircle size={18} />
-                            Question
-                        </h3>
-                        {currentPerformance && (
-                            <div className="question-performance">
-                                <span className="correct-count">
-                                    <CheckCircle size={14} />
-                                    {currentPerformance.correctCount}
-                                </span>
-                                <span className="incorrect-count">
-                                    <XCircle size={14} />
-                                    {currentPerformance.incorrectCount}
-                                </span>
-                            </div>
-                        )}
-                    </div>
-                    {currentQuestion.questionImages?.length ? (
-                        <div className="question-images">
-                            {currentQuestion.questionImages.map(
-                                (image, index) => (
-                                    <img
-                                        key={`${currentQuestion.id}-qimg-${index}`}
-                                        src={image}
-                                        alt=""
-                                        className="question-image"
-                                    />
-                                )
-                            )}
-                        </div>
-                    ) : null}
-                    <p className="question-text">
-                        {formatText(currentQuestion.question)}
-                    </p>
-                </div>
-
-                <div className="options-section">
-                    <h4>Choose the correct answer:</h4>
-                    <div className="options-grid">
-                        {currentQuestion.options.map((option, index) => (
-                            <button
-                                key={index}
-                                onClick={() => handleOptionSelect(index)}
-                                className={`option-button ${
-                                    selectedOptions.includes(index)
-                                        ? 'selected'
-                                        : ''
-                                } ${
-                                    showAnswer &&
-                                    correctOptionIndexes.includes(index)
-                                        ? 'correct'
-                                        : ''
-                                } ${
-                                    showAnswer &&
-                                    selectedOptions.includes(index) &&
-                                    !correctOptionIndexes.includes(index)
-                                        ? 'incorrect'
-                                        : ''
-                                }`}
-                                disabled={showAnswer}
-                                title={`Select option ${String.fromCharCode(65 + index)} (${index + 1})`}
+                <Card
+                    sx={{
+                        borderLeft: '4px solid',
+                        borderColor: 'warning.main',
+                    }}
+                >
+                    <CardContent>
+                        <Stack spacing={2}>
+                            <Stack
+                                direction="row"
+                                sx={{
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                }}
                             >
-                                <span className="option-letter">
-                                    {String.fromCharCode(65 + index)}
-                                </span>
-                                <span className="option-text">
-                                    {formatText(option)}
-                                </span>
-                                {currentQuestion.optionImages?.[index] ? (
-                                    <img
-                                        src={
-                                            currentQuestion.optionImages[
-                                                index
-                                            ] || ''
-                                        }
-                                        alt=""
-                                        className="option-image"
-                                    />
-                                ) : null}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {showAnswer && (
-                    <div className="answer-section">
-                        <h4>
-                            <CheckCircle size={18} />
-                            Explanation
-                        </h4>
-                        <p className="answer-text">
-                            <strong>
-                                Correct Answer:{' '}
-                                {formatText(currentQuestion.answer.join(', '))}
-                            </strong>
-                        </p>
-                        {hasExplanation(currentQuestion.explanation) && (
-                            <div className="explanation">
-                                <p>{formatText(currentQuestion.explanation)}</p>
-                            </div>
-                        )}
-                        {selectedOptions.length > 0 && (
-                            <div className="result-indicator">
-                                {isCorrect ? (
-                                    <p className="correct-result">
-                                        <CheckCircle
-                                            size={20}
-                                            style={{
-                                                color: 'var(--success-color)',
-                                            }}
+                                <Stack direction="row" spacing={1}>
+                                    <HelpCircle size={18} />
+                                    <Typography variant="subtitle1">
+                                        Question
+                                    </Typography>
+                                </Stack>
+                                {currentPerformance && (
+                                    <Stack direction="row" spacing={1}>
+                                        <Chip
+                                            size="small"
+                                            icon={<CheckCircle size={14} />}
+                                            label={
+                                                currentPerformance.correctCount
+                                            }
+                                            color="success"
+                                            variant="outlined"
                                         />
-                                        Correct! Well done.
-                                    </p>
-                                ) : (
-                                    <p className="incorrect-result">
-                                        <XCircle
-                                            size={20}
-                                            style={{
-                                                color: 'var(--error-color)',
-                                            }}
+                                        <Chip
+                                            size="small"
+                                            icon={<XCircle size={14} />}
+                                            label={
+                                                currentPerformance.incorrectCount
+                                            }
+                                            color="error"
+                                            variant="outlined"
                                         />
-                                        Incorrect. The correct answer was{' '}
-                                        {formatText(
-                                            currentQuestion.answer.join(', ')
-                                        )}
-                                        .
-                                    </p>
+                                    </Stack>
                                 )}
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                <div className="mode-action-bar review-actions">
-                    {!showAnswer ? (
-                        <button
-                            onClick={handleRevealAnswer}
-                            className="btn btn-primary"
-                            disabled={selectedOptions.length === 0}
-                            title="Reveal answer (Space/Enter)"
-                        >
-                            <Eye size={16} />
-                            Reveal Answer
-                        </button>
-                    ) : (
-                        <button
-                            onClick={handleNext}
-                            className="btn btn-primary"
-                            title="Next question (→)"
-                        >
-                            <ArrowRight size={20} />
-                            Next Question
-                        </button>
-                    )}
-                </div>
-            </div>
-        </div>
+                            </Stack>
+                            {currentQuestion.questionImages?.length ? (
+                                <Stack
+                                    direction="row"
+                                    spacing={1}
+                                    sx={{ flexWrap: 'wrap' }}
+                                >
+                                    {currentQuestion.questionImages.map(
+                                        (image, index) => (
+                                            <Box
+                                                key={`${currentQuestion.id}-qimg-${index}`}
+                                                component="img"
+                                                src={image}
+                                                alt=""
+                                                sx={{
+                                                    maxWidth: '100%',
+                                                    borderRadius: 1,
+                                                    border: '1px solid',
+                                                    borderColor: 'divider',
+                                                }}
+                                            />
+                                        )
+                                    )}
+                                </Stack>
+                            ) : null}
+                            <Typography variant="body1">
+                                {formatText(currentQuestion.question)}
+                            </Typography>
+                            <Stack spacing={1}>
+                                <Typography variant="subtitle2">
+                                    Choose the correct answer:
+                                </Typography>
+                                <Stack spacing={1}>
+                                    {currentQuestion.options.map(
+                                        (option, index) => {
+                                            const isSelected =
+                                                selectedOptions.includes(index);
+                                            const isCorrectOption =
+                                                correctOptionIndexes.includes(
+                                                    index
+                                                );
+                                            const isIncorrectSelection =
+                                                showAnswer &&
+                                                isSelected &&
+                                                !isCorrectOption;
+                                            const isCorrectSelection =
+                                                showAnswer && isCorrectOption;
+                                            return (
+                                                <Button
+                                                    key={index}
+                                                    onClick={() =>
+                                                        handleOptionSelect(
+                                                            index
+                                                        )
+                                                    }
+                                                    variant="outlined"
+                                                    disabled={showAnswer}
+                                                    sx={{
+                                                        justifyContent:
+                                                            'flex-start',
+                                                        textTransform: 'none',
+                                                        gap: 2,
+                                                        alignItems:
+                                                            'flex-start',
+                                                        borderColor:
+                                                            isCorrectSelection
+                                                                ? 'success.main'
+                                                                : isIncorrectSelection
+                                                                  ? 'error.main'
+                                                                  : isSelected
+                                                                    ? 'primary.main'
+                                                                    : 'divider',
+                                                        bgcolor:
+                                                            isCorrectSelection
+                                                                ? 'success.light'
+                                                                : isIncorrectSelection
+                                                                  ? 'error.light'
+                                                                  : isSelected
+                                                                    ? 'primary.light'
+                                                                    : 'transparent',
+                                                    }}
+                                                    title={`Select option ${String.fromCharCode(
+                                                        65 + index
+                                                    )} (${index + 1})`}
+                                                >
+                                                    <Chip
+                                                        label={String.fromCharCode(
+                                                            65 + index
+                                                        )}
+                                                        size="small"
+                                                        sx={{
+                                                            bgcolor: isSelected
+                                                                ? 'primary.main'
+                                                                : 'divider',
+                                                            color: isSelected
+                                                                ? 'common.white'
+                                                                : 'text.secondary',
+                                                        }}
+                                                    />
+                                                    <Box>
+                                                        <Typography
+                                                            variant="body2"
+                                                            color="text.primary"
+                                                        >
+                                                            {formatText(option)}
+                                                        </Typography>
+                                                        {currentQuestion
+                                                            .optionImages?.[
+                                                            index
+                                                        ] ? (
+                                                            <Box
+                                                                component="img"
+                                                                src={
+                                                                    currentQuestion
+                                                                        .optionImages[
+                                                                        index
+                                                                    ] || ''
+                                                                }
+                                                                alt=""
+                                                                sx={{
+                                                                    maxWidth:
+                                                                        '100%',
+                                                                    mt: 1,
+                                                                    borderRadius: 1,
+                                                                    border: '1px solid',
+                                                                    borderColor:
+                                                                        'divider',
+                                                                }}
+                                                            />
+                                                        ) : null}
+                                                    </Box>
+                                                </Button>
+                                            );
+                                        }
+                                    )}
+                                </Stack>
+                            </Stack>
+                            {showAnswer && (
+                                <>
+                                    <Divider />
+                                    <Stack spacing={1}>
+                                        <Stack direction="row" spacing={1}>
+                                            <CheckCircle size={18} />
+                                            <Typography variant="subtitle1">
+                                                Explanation
+                                            </Typography>
+                                        </Stack>
+                                        <Typography variant="body1">
+                                            <strong>
+                                                Correct Answer:{' '}
+                                                {formatText(
+                                                    currentQuestion.answer.join(
+                                                        ', '
+                                                    )
+                                                )}
+                                            </strong>
+                                        </Typography>
+                                        {hasExplanation(
+                                            currentQuestion.explanation
+                                        ) && (
+                                            <Box
+                                                sx={{
+                                                    bgcolor: 'primary.light',
+                                                    p: 2,
+                                                    borderRadius: 2,
+                                                }}
+                                            >
+                                                <Typography variant="body2">
+                                                    {formatText(
+                                                        currentQuestion.explanation
+                                                    )}
+                                                </Typography>
+                                            </Box>
+                                        )}
+                                        {selectedOptions.length > 0 && (
+                                            <Box
+                                                sx={{
+                                                    bgcolor: isCorrect
+                                                        ? 'success.light'
+                                                        : 'error.light',
+                                                    p: 2,
+                                                    borderRadius: 2,
+                                                }}
+                                            >
+                                                <Stack
+                                                    direction="row"
+                                                    spacing={1}
+                                                    sx={{
+                                                        alignItems: 'center',
+                                                    }}
+                                                >
+                                                    {isCorrect ? (
+                                                        <CheckCircle
+                                                            size={20}
+                                                        />
+                                                    ) : (
+                                                        <XCircle size={20} />
+                                                    )}
+                                                    <Typography variant="body2">
+                                                        {isCorrect
+                                                            ? 'Correct! Well done.'
+                                                            : `Incorrect. The correct answer was ${formatText(
+                                                                  currentQuestion.answer.join(
+                                                                      ', '
+                                                                  )
+                                                              )}.`}
+                                                    </Typography>
+                                                </Stack>
+                                            </Box>
+                                        )}
+                                    </Stack>
+                                </>
+                            )}
+                            <Box>
+                                {!showAnswer ? (
+                                    <Button
+                                        variant="contained"
+                                        onClick={handleRevealAnswer}
+                                        disabled={selectedOptions.length === 0}
+                                        startIcon={<Eye size={16} />}
+                                    >
+                                        Reveal Answer
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        variant="contained"
+                                        onClick={handleNext}
+                                        startIcon={<ArrowRight size={20} />}
+                                    >
+                                        Next Question
+                                    </Button>
+                                )}
+                            </Box>
+                        </Stack>
+                    </CardContent>
+                </Card>
+            </Stack>
+        </Box>
     );
 };

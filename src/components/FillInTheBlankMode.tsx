@@ -1,4 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import {
+    Box,
+    Stack,
+    Typography,
+    IconButton,
+    Button,
+    LinearProgress,
+    Card,
+    CardContent,
+    Divider,
+    Chip,
+    TextField,
+    MenuItem,
+} from '@mui/material';
 import { Question, QuestionPerformance } from '../types';
 import {
     CheckCircle,
@@ -414,264 +428,297 @@ export const FillInTheBlankMode: React.FC<FillInTheBlankModeProps> = ({
 
         if (!currentQuestion || blanks.length === 0) {
             return (
-                <p className="answer-text">{formatText(correctAnswerText)}</p>
+                <Typography component="p" variant="body1">
+                    {formatText(correctAnswerText)}
+                </Typography>
             );
         }
 
-        // If showing answer and there are incorrect answers, show the full text with highlighting
-        if (showAnswer && blanks.some(b => b.userAnswer !== b.correctAnswer)) {
-            // Sort blanks by position (ascending) to process from start to end
-            const sortedBlanks = [...blanks].sort(
-                (a, b) => a.position - b.position
-            );
+        const renderText = (text: string, key: string) => (
+            <Box component="span" key={key}>
+                {formatText(text)}
+            </Box>
+        );
 
-            const segments: JSX.Element[] = [];
-            let currentPosition = 0;
-
-            sortedBlanks.forEach((blank, index) => {
-                // Add text before the blank
-                if (blank.position > currentPosition) {
-                    segments.push(
-                        <span key={`text-${index}`}>
-                            {formatText(
-                                correctAnswerText.slice(
-                                    currentPosition,
-                                    blank.position
-                                )
-                            )}
-                        </span>
-                    );
-                }
-
-                // Add the term with appropriate styling
-                const isCorrect = blank.userAnswer === blank.correctAnswer;
-                if (isCorrect) {
-                    segments.push(
-                        <span
-                            key={`term-${index}`}
-                            className="answer-term correct"
-                        >
-                            {blank.correctAnswer}
-                        </span>
-                    );
-                } else {
-                    segments.push(
-                        <>
-                            <span
-                                key={`term-wrong-${index}`}
-                                className="answer-term incorrect"
-                            >
-                                {blank.userAnswer || '(no answer)'}
-                            </span>
-                            <span
-                                key={`term-correct-${index}`}
-                                className="answer-term correction"
-                            >
-                                {blank.correctAnswer}
-                            </span>
-                        </>
-                    );
-                }
-
-                currentPosition = blank.position + blank.originalWord.length;
-            });
-
-            // Add any remaining text
-            if (currentPosition < correctAnswerText.length) {
-                segments.push(
-                    <span key="text-final">
-                        {formatText(correctAnswerText.slice(currentPosition))}
-                    </span>
-                );
-            }
-
-            return <p className="answer-text">{segments}</p>;
-        }
-
-        // Otherwise show the dropdowns
         const sortedBlanks = [...blanks].sort(
             (a, b) => a.position - b.position
         );
-
         const segments: JSX.Element[] = [];
         let currentPosition = 0;
 
         sortedBlanks.forEach((blank, index) => {
-            // Add text before the blank
             if (blank.position > currentPosition) {
                 segments.push(
-                    <span key={`text-${index}`}>
-                        {formatText(
-                            correctAnswerText.slice(
-                                currentPosition,
-                                blank.position
-                            )
-                        )}
-                    </span>
+                    renderText(
+                        correctAnswerText.slice(
+                            currentPosition,
+                            blank.position
+                        ),
+                        `text-${index}`
+                    )
                 );
             }
 
-            // Add the dropdown
-            segments.push(
-                <select
-                    key={`blank-${blank.id}`}
-                    className="fill-in-blank-dropdown"
-                    value={blank.userAnswer || ''}
-                    onChange={e => handleBlankChange(blank.id, e.target.value)}
-                    disabled={showAnswer}
-                >
-                    <option value="">Select...</option>
-                    {blank.options.map((option, optIndex) => (
-                        <option key={optIndex} value={option}>
-                            {option}
-                        </option>
-                    ))}
-                </select>
-            );
+            if (
+                showAnswer &&
+                blanks.some(b => b.userAnswer !== b.correctAnswer)
+            ) {
+                const isCorrect = blank.userAnswer === blank.correctAnswer;
+                if (isCorrect) {
+                    segments.push(
+                        <Box
+                            component="span"
+                            key={`term-${index}`}
+                            sx={{ mx: 0.5 }}
+                        >
+                            <Chip
+                                size="small"
+                                color="success"
+                                label={blank.correctAnswer}
+                            />
+                        </Box>
+                    );
+                } else {
+                    segments.push(
+                        <Box
+                            component="span"
+                            key={`term-${index}`}
+                            sx={{
+                                mx: 0.5,
+                                display: 'inline-flex',
+                                gap: 0.5,
+                            }}
+                        >
+                            <Chip
+                                size="small"
+                                color="error"
+                                label={blank.userAnswer || '(no answer)'}
+                            />
+                            <Chip
+                                size="small"
+                                color="success"
+                                variant="outlined"
+                                label={blank.correctAnswer}
+                            />
+                        </Box>
+                    );
+                }
+            } else {
+                segments.push(
+                    <Box
+                        component="span"
+                        key={`blank-${blank.id}`}
+                        sx={{ mx: 0.5, display: 'inline-block', minWidth: 140 }}
+                    >
+                        <TextField
+                            select
+                            size="small"
+                            value={blank.userAnswer || ''}
+                            onChange={e =>
+                                handleBlankChange(blank.id, e.target.value)
+                            }
+                            disabled={showAnswer}
+                            fullWidth
+                        >
+                            <MenuItem value="">Select...</MenuItem>
+                            {blank.options.map((option, optIndex) => (
+                                <MenuItem key={optIndex} value={option}>
+                                    {option}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                    </Box>
+                );
+            }
 
             currentPosition = blank.position + blank.originalWord.length;
         });
 
-        // Add any remaining text
         if (currentPosition < correctAnswerText.length) {
             segments.push(
-                <span key="text-final">
-                    {formatText(correctAnswerText.slice(currentPosition))}
-                </span>
+                renderText(
+                    correctAnswerText.slice(currentPosition),
+                    'text-final'
+                )
             );
         }
 
-        return <p className="answer-text">{segments}</p>;
+        return (
+            <Typography component="p" variant="body1">
+                {segments}
+            </Typography>
+        );
     };
 
     if (!currentQuestion) {
         return (
-            <div className="fill-in-blank-container">
-                <div className="completion-message">
-                    <CheckCircle
-                        size={48}
-                        style={{ color: 'var(--success-color)' }}
-                    />
-                    <h2>
-                        Great job! You've completed all fill-in-the-blank
-                        questions!
-                    </h2>
-                    <button
-                        onClick={() => window.location.reload()}
-                        className="btn btn-primary"
-                    >
-                        <RotateCcw size={16} />
-                        Start Over
-                    </button>
-                </div>
-            </div>
+            <Box sx={{ maxWidth: 720, mx: 'auto', px: 2 }}>
+                <Card>
+                    <CardContent>
+                        <Stack spacing={2} sx={{ alignItems: 'center' }}>
+                            <CheckCircle size={48} />
+                            <Typography
+                                variant="h5"
+                                sx={{ textAlign: 'center' }}
+                            >
+                                Great job! You've completed all
+                                fill-in-the-blank questions!
+                            </Typography>
+                            <Button
+                                variant="contained"
+                                onClick={() => window.location.reload()}
+                                startIcon={<RotateCcw size={16} />}
+                            >
+                                Start Over
+                            </Button>
+                        </Stack>
+                    </CardContent>
+                </Card>
+            </Box>
         );
     }
 
     return (
-        <div className="fill-in-blank-container">
-            <div className="mode-nav-bar navigation-controls">
-                <button
-                    onClick={handlePrevious}
-                    disabled={currentIndex === 0}
-                    className="nav-arrow"
-                    aria-label="Previous question"
-                >
-                    <ChevronLeft size={24} />
-                </button>
-                <span className="question-counter">
-                    Question {currentIndex + 1} of {questions.length}
-                </span>
-                <button
-                    onClick={handleNext}
-                    disabled={currentIndex === questions.length - 1}
-                    className="nav-arrow"
-                    aria-label="Next question"
-                >
-                    <ChevronRight size={24} />
-                </button>
-            </div>
-            <div className="progress-bar">
-                <div
-                    className="progress-fill"
-                    style={{
-                        width: `${((currentIndex + 1) / questions.length) * 100}%`,
+        <Box sx={{ maxWidth: 720, mx: 'auto', px: 2 }}>
+            <Stack spacing={2}>
+                <Stack
+                    direction="row"
+                    sx={{
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
                     }}
+                >
+                    <IconButton
+                        onClick={handlePrevious}
+                        disabled={currentIndex === 0}
+                        aria-label="Previous question"
+                    >
+                        <ChevronLeft size={24} />
+                    </IconButton>
+                    <Typography variant="body2" color="text.secondary">
+                        Question {currentIndex + 1} of {questions.length}
+                    </Typography>
+                    <IconButton
+                        onClick={handleNext}
+                        disabled={currentIndex === questions.length - 1}
+                        aria-label="Next question"
+                    >
+                        <ChevronRight size={24} />
+                    </IconButton>
+                </Stack>
+                <LinearProgress
+                    variant="determinate"
+                    value={((currentIndex + 1) / questions.length) * 100}
+                    sx={{ height: 6, borderRadius: 999 }}
                 />
-            </div>
-
-            <div className="fill-in-blank-card">
-                <div className="question-section">
-                    <div className="question-header-card">
-                        <h3>
-                            <HelpCircle size={18} />
-                            Question
-                        </h3>
-                        {currentPerformance && (
-                            <div className="question-performance">
-                                <span className="correct-count">
-                                    <CheckCircle size={14} />
-                                    {currentPerformance.correctCount}
-                                </span>
-                                <span className="incorrect-count">
-                                    <XCircle size={14} />
-                                    {currentPerformance.incorrectCount}
-                                </span>
-                            </div>
-                        )}
-                    </div>
-                    {currentQuestion.questionImages?.length ? (
-                        <div className="question-images">
-                            {currentQuestion.questionImages.map(
-                                (image, index) => (
-                                    <img
-                                        key={`${currentQuestion.id}-qimg-${index}`}
-                                        src={image}
-                                        alt=""
-                                        className="question-image"
-                                    />
-                                )
-                            )}
-                        </div>
-                    ) : null}
-                    <p className="question-text">
-                        {formatText(currentQuestion.question)}
-                    </p>
-                </div>
-
-                <div className="answer-section">
-                    <h4>
-                        <Edit3 size={18} />
-                        Fill in the Blanks
-                    </h4>
-                    <p className="instruction-text">
-                        Complete the answer by selecting the correct words from
-                        the dropdowns:
-                    </p>
-                    {renderAnswerWithBlanks()}
-                </div>
-
-                <div className="mode-action-bar fill-in-blank-controls">
-                    {!showAnswer && (
-                        <button
-                            onClick={handleRevealAnswer}
-                            className="btn btn-primary"
-                        >
-                            <Eye size={16} />
-                            Check Answers
-                        </button>
-                    )}
-                    {showAnswer && (
-                        <button
-                            onClick={handleNext}
-                            className="btn btn-primary"
-                        >
-                            <ArrowRight size={16} />
-                            Next Question
-                        </button>
-                    )}
-                </div>
-            </div>
-        </div>
+                <Card
+                    sx={{ borderLeft: '4px solid', borderColor: 'error.main' }}
+                >
+                    <CardContent>
+                        <Stack spacing={2}>
+                            <Stack
+                                direction="row"
+                                sx={{
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Stack direction="row" spacing={1}>
+                                    <HelpCircle size={18} />
+                                    <Typography variant="subtitle1">
+                                        Question
+                                    </Typography>
+                                </Stack>
+                                {currentPerformance && (
+                                    <Stack direction="row" spacing={1}>
+                                        <Chip
+                                            size="small"
+                                            icon={<CheckCircle size={14} />}
+                                            label={
+                                                currentPerformance.correctCount
+                                            }
+                                            color="success"
+                                            variant="outlined"
+                                        />
+                                        <Chip
+                                            size="small"
+                                            icon={<XCircle size={14} />}
+                                            label={
+                                                currentPerformance.incorrectCount
+                                            }
+                                            color="error"
+                                            variant="outlined"
+                                        />
+                                    </Stack>
+                                )}
+                            </Stack>
+                            {currentQuestion.questionImages?.length ? (
+                                <Stack
+                                    direction="row"
+                                    spacing={1}
+                                    sx={{ flexWrap: 'wrap' }}
+                                >
+                                    {currentQuestion.questionImages.map(
+                                        (image, index) => (
+                                            <Box
+                                                key={`${currentQuestion.id}-qimg-${index}`}
+                                                component="img"
+                                                src={image}
+                                                alt=""
+                                                sx={{
+                                                    maxWidth: '100%',
+                                                    borderRadius: 1,
+                                                    border: '1px solid',
+                                                    borderColor: 'divider',
+                                                }}
+                                            />
+                                        )
+                                    )}
+                                </Stack>
+                            ) : null}
+                            <Typography variant="body1">
+                                {formatText(currentQuestion.question)}
+                            </Typography>
+                            <Divider />
+                            <Stack spacing={1}>
+                                <Stack direction="row" spacing={1}>
+                                    <Edit3 size={18} />
+                                    <Typography variant="subtitle1">
+                                        Fill in the Blanks
+                                    </Typography>
+                                </Stack>
+                                <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                >
+                                    Complete the answer by selecting the correct
+                                    words from the dropdowns:
+                                </Typography>
+                                {renderAnswerWithBlanks()}
+                            </Stack>
+                            <Box>
+                                {!showAnswer ? (
+                                    <Button
+                                        variant="contained"
+                                        onClick={handleRevealAnswer}
+                                        startIcon={<Eye size={16} />}
+                                    >
+                                        Check Answers
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        variant="contained"
+                                        onClick={handleNext}
+                                        startIcon={<ArrowRight size={16} />}
+                                    >
+                                        Next Question
+                                    </Button>
+                                )}
+                            </Box>
+                        </Stack>
+                    </CardContent>
+                </Card>
+            </Stack>
+        </Box>
     );
 };

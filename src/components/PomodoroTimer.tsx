@@ -1,5 +1,16 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
+    Box,
+    Stack,
+    Typography,
+    IconButton,
+    Button,
+    Paper,
+    Popover,
+    Divider,
+    TextField,
+} from '@mui/material';
+import {
     Timer,
     Settings,
     Pause,
@@ -66,7 +77,7 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
     const [timeLeft, setTimeLeft] = useState(DEFAULT_SETTINGS.workTime);
     const [isRunning, setIsRunning] = useState(false);
     const [isWorkMode, setIsWorkMode] = useState(true);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [settings, setSettings] = useState<TimerSettings>(DEFAULT_SETTINGS);
     const [stats, setStats] = useState<PomodoroStats>({
@@ -89,10 +100,8 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
     const elapsedTimeRef = useRef<number>(0);
 
     const timerRef = useRef<NodeJS.Timeout>();
-    const containerRef = useRef<HTMLDivElement>(null);
     const notificationAudioRef = useRef<HTMLAudioElement | null>(null);
-    const dropdownBtnRef = useRef<HTMLButtonElement | null>(null);
-    const dropdownRef = useRef<HTMLDivElement | null>(null);
+    const isMenuOpen = Boolean(menuAnchorEl);
 
     // Initialize audio elements
     useEffect(() => {
@@ -183,26 +192,14 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
         }
     }, [isRunning, isWorkMode]);
 
-    // Only run click-outside logic if not in sidebarMode
-    useEffect(() => {
-        if (sidebarMode) return;
-        const handleClickOutside = (event: MouseEvent) => {
-            if (
-                dropdownRef.current &&
-                !dropdownRef.current.contains(event.target as Node) &&
-                dropdownBtnRef.current &&
-                !dropdownBtnRef.current.contains(event.target as Node) &&
-                isMenuOpen
-            ) {
-                setIsMenuOpen(false);
-                setIsSettingsOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [isMenuOpen, sidebarMode]);
+    const handleOpenMenu = (event: React.MouseEvent<HTMLElement>) => {
+        setMenuAnchorEl(event.currentTarget);
+    };
+
+    const handleCloseMenu = () => {
+        setMenuAnchorEl(null);
+        setIsSettingsOpen(false);
+    };
 
     const playSound = useCallback(() => {
         if (!audioEnabled) return;
@@ -227,10 +224,29 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
 
             toast.custom(
                 t => (
-                    <div className={`custom-toast ${t.visible ? 'show' : ''}`}>
+                    <Paper
+                        elevation={3}
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            px: 2,
+                            py: 1.5,
+                            borderRadius: 2,
+                            borderLeft: '3px solid',
+                            borderColor: 'primary.main',
+                            opacity: t.visible ? 1 : 0,
+                            transform: t.visible
+                                ? 'translateY(0)'
+                                : 'translateY(-16px)',
+                            transition: 'all 0.3s ease',
+                        }}
+                    >
                         <Icon size={24} />
-                        <span>{randomMessage.message}</span>
-                    </div>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            {randomMessage.message}
+                        </Typography>
+                    </Paper>
                 ),
                 {
                     duration: 4000,
@@ -352,445 +368,390 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
         setPendingSettings(null);
     };
 
+    const activeSettings = pendingSettings ?? settings;
+    const statusLabel = waitingToContinue
+        ? 'Break Complete!'
+        : isWorkMode
+          ? 'Work Session'
+          : 'Break Time';
+
     return (
-        <div
-            className={`pomodoro-container${sidebarMode ? ' sidebar' : ''}`}
-            ref={containerRef}
-        >
+        <Box>
+            <Stack
+                direction="row"
+                spacing={1}
+                sx={{ alignItems: 'center', flexWrap: 'wrap' }}
+            >
+                <Timer size={16} />
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    {formatTime(timeLeft)}
+                </Typography>
+                {waitingToContinue ? (
+                    <Button
+                        size="small"
+                        variant="contained"
+                        onClick={startNextWorkSession}
+                    >
+                        Start Work Session
+                    </Button>
+                ) : (
+                    <IconButton size="small" onClick={toggleTimer}>
+                        {isRunning ? <Pause size={16} /> : <Play size={16} />}
+                    </IconButton>
+                )}
+                {!sidebarMode && (
+                    <IconButton size="small" onClick={handleOpenMenu}>
+                        <ChevronDown size={16} />
+                    </IconButton>
+                )}
+            </Stack>
             {sidebarMode ? (
-                <div className="pomodoro-timer sidebar">
-                    <div className="timer-display">
-                        <Timer size={16} />
-                        <span className="time">{formatTime(timeLeft)}</span>
-                        {waitingToContinue ? (
-                            <button
-                                className="start-work-btn"
-                                onClick={startNextWorkSession}
-                            >
-                                Start Work Session
-                            </button>
-                        ) : (
-                            <button
-                                className="play-pause-btn"
-                                onClick={toggleTimer}
-                            >
-                                {isRunning ? (
-                                    <Pause size={16} />
-                                ) : (
-                                    <Play size={16} />
-                                )}
-                            </button>
-                        )}
-                        {/* No chevron/expand in sidebar mode */}
-                    </div>
-                    <div className="pomodoro-menu sidebar">
-                        {!isSettingsOpen ? (
-                            <>
-                                <div className="menu-header">
-                                    <h3 style={{ fontSize: '1rem', margin: 0 }}>
-                                        {waitingToContinue
-                                            ? 'Break Complete!'
-                                            : isWorkMode
-                                              ? 'Work Session'
-                                              : 'Break Time'}
-                                    </h3>
-                                    <div className="timer-controls">
-                                        {!waitingToContinue && (
-                                            <>
-                                                <button
-                                                    onClick={skipSession}
-                                                    title={`Skip to end of ${isWorkMode ? 'work' : 'break'} session`}
-                                                >
-                                                    <SkipForward size={16} />
-                                                </button>
-                                                <button
-                                                    onClick={() =>
-                                                        setShowResetTimerModal(
-                                                            true
-                                                        )
-                                                    }
-                                                >
-                                                    <RotateCcw size={16} />
-                                                </button>
-                                            </>
-                                        )}
-                                        <button
-                                            onClick={() =>
-                                                setIsSettingsOpen(true)
-                                            }
-                                        >
-                                            <Settings size={16} />
-                                        </button>
-                                    </div>
-                                </div>
-                                <div className="stats-container">
-                                    <div className="stat-item">
-                                        <span className="stat-label">
-                                            Completed
-                                        </span>
-                                        <span className="stat-value">
-                                            {stats.completedPomodoros}
-                                        </span>
-                                    </div>
-                                    <div className="stat-item">
-                                        <span className="stat-label">
-                                            Study Time
-                                        </span>
-                                        <span className="stat-value">
-                                            {stats.totalStudyTime} min
-                                        </span>
-                                    </div>
-                                    <div className="stat-item">
-                                        <span className="stat-label">
-                                            Streak
-                                        </span>
-                                        <span className="stat-value">
-                                            {stats.currentStreak}
-                                        </span>
-                                    </div>
-                                </div>
-                            </>
-                        ) : (
-                            <div className="settings-menu sidebar">
-                                <div className="settings-header sidebar">
-                                    <button
-                                        className="back-settings-btn"
-                                        onClick={closeSettings}
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 4,
-                                        }}
-                                    >
-                                        <ArrowLeft size={16} />
-                                        <span>Back</span>
-                                    </button>
-                                    <h3 style={{ margin: 0, fontSize: '1rem' }}>
-                                        Timer Settings
-                                    </h3>
-                                </div>
-                                <div className="settings-content sidebar">
-                                    <div className="setting-item">
-                                        <label htmlFor="workTime">
-                                            Work Time (minutes)
-                                        </label>
-                                        <input
-                                            id="workTime"
-                                            type="number"
-                                            min="1"
-                                            value={Math.floor(
-                                                settings.workTime / 60
-                                            )}
-                                            onChange={e =>
-                                                handleSettingChange(
-                                                    'workTime',
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
-                                    </div>
-                                    <div className="setting-item">
-                                        <label htmlFor="breakTime">
-                                            Break Time (minutes)
-                                        </label>
-                                        <input
-                                            id="breakTime"
-                                            type="number"
-                                            min="1"
-                                            value={Math.floor(
-                                                settings.breakTime / 60
-                                            )}
-                                            onChange={e =>
-                                                handleSettingChange(
-                                                    'breakTime',
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
-                                    </div>
-                                    <div className="setting-item">
-                                        <label htmlFor="longBreakTime">
-                                            Long Break Time (minutes)
-                                        </label>
-                                        <input
-                                            id="longBreakTime"
-                                            type="number"
-                                            min="1"
-                                            value={Math.floor(
-                                                settings.longBreakTime / 60
-                                            )}
-                                            onChange={e =>
-                                                handleSettingChange(
-                                                    'longBreakTime',
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
-                                    </div>
-                                    <div className="setting-item">
-                                        <label htmlFor="sessionsUntilLongBreak">
-                                            Sessions Until Long Break
-                                        </label>
-                                        <input
-                                            id="sessionsUntilLongBreak"
-                                            type="number"
-                                            min="1"
-                                            value={
-                                                settings.sessionsUntilLongBreak
-                                            }
-                                            onChange={e =>
-                                                handleSettingChange(
-                                                    'sessionsUntilLongBreak',
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
-                                    </div>
-                                    <div className="setting-item">
-                                        <button onClick={applySettings}>
-                                            Save
-                                        </button>
-                                        <button onClick={closeSettings}>
-                                            Cancel
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            ) : (
-                <>
-                    <div className="pomodoro-timer">
-                        <Timer size={16} />
-                        <span className="time">{formatTime(timeLeft)}</span>
-                        {waitingToContinue ? (
-                            <button
-                                className="start-work-btn"
-                                onClick={e => {
-                                    e.stopPropagation();
-                                    startNextWorkSession();
+                <Box sx={{ mt: 2 }}>
+                    {!isSettingsOpen ? (
+                        <Stack spacing={2}>
+                            <Stack
+                                direction="row"
+                                sx={{
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
                                 }}
                             >
-                                Start Work Session
-                            </button>
-                        ) : (
-                            <button
-                                className="play-pause-btn"
-                                onClick={e => {
-                                    e.stopPropagation();
-                                    toggleTimer();
-                                }}
-                            >
-                                {isRunning ? (
-                                    <Pause size={16} />
-                                ) : (
-                                    <Play size={16} />
-                                )}
-                            </button>
-                        )}
-                        <button
-                            className="header-metrics-btn"
-                            ref={dropdownBtnRef}
-                            aria-label="Show Pomodoro details"
-                            aria-haspopup="true"
-                            aria-expanded={isMenuOpen}
-                            onClick={e => {
-                                e.stopPropagation();
-                                setIsMenuOpen(v => !v);
-                            }}
-                        >
-                            <ChevronDown size={16} />
-                        </button>
-                    </div>
-                    {isMenuOpen && (
-                        <div
-                            className="header-metrics-dropdown"
-                            ref={dropdownRef}
-                            tabIndex={-1}
-                            role="menu"
-                        >
-                            {!isSettingsOpen ? (
-                                <>
-                                    <div className="menu-header">
-                                        <h3
-                                            style={{
-                                                fontSize: '1rem',
-                                                margin: 0,
-                                            }}
-                                        >
-                                            {waitingToContinue
-                                                ? 'Break Complete!'
-                                                : isWorkMode
-                                                  ? 'Work Session'
-                                                  : 'Break Time'}
-                                        </h3>
-                                        <div className="timer-controls">
-                                            {!waitingToContinue && (
-                                                <>
-                                                    <button
-                                                        onClick={skipSession}
-                                                        title={`Skip to end of ${isWorkMode ? 'work' : 'break'} session`}
-                                                    >
-                                                        <SkipForward
-                                                            size={16}
-                                                        />
-                                                    </button>
-                                                    <button
-                                                        onClick={() =>
-                                                            setShowResetTimerModal(
-                                                                true
-                                                            )
-                                                        }
-                                                    >
-                                                        <RotateCcw size={16} />
-                                                    </button>
-                                                </>
-                                            )}
-                                            <button
+                                <Typography variant="subtitle1">
+                                    {statusLabel}
+                                </Typography>
+                                <Stack direction="row" spacing={1}>
+                                    {!waitingToContinue && (
+                                        <>
+                                            <IconButton
+                                                size="small"
+                                                onClick={skipSession}
+                                                title={`Skip to end of ${isWorkMode ? 'work' : 'break'} session`}
+                                            >
+                                                <SkipForward size={16} />
+                                            </IconButton>
+                                            <IconButton
+                                                size="small"
                                                 onClick={() =>
-                                                    setIsSettingsOpen(true)
+                                                    setShowResetTimerModal(true)
                                                 }
                                             >
-                                                <Settings size={16} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="stats-container">
-                                        <div className="stat-item">
-                                            <span className="stat-label">
-                                                Completed
-                                            </span>
-                                            <span className="stat-value">
-                                                {stats.completedPomodoros}
-                                            </span>
-                                        </div>
-                                        <div className="stat-item">
-                                            <span className="stat-label">
-                                                Study Time
-                                            </span>
-                                            <span className="stat-value">
-                                                {stats.totalStudyTime} min
-                                            </span>
-                                        </div>
-                                        <div className="stat-item">
-                                            <span className="stat-label">
-                                                Streak
-                                            </span>
-                                            <span className="stat-value">
-                                                {stats.currentStreak}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </>
-                            ) : (
-                                <div className="settings-menu">
-                                    <div className="settings-header">
-                                        <h3>Timer Settings</h3>
-                                        <button
-                                            className="close-settings"
-                                            onClick={closeSettings}
-                                        >
-                                            <X size={16} />
-                                        </button>
-                                    </div>
-                                    <div className="settings-content">
-                                        <div className="setting-item">
-                                            <label htmlFor="workTime">
-                                                Work Time (minutes)
-                                            </label>
-                                            <input
-                                                id="workTime"
-                                                type="number"
-                                                min="1"
-                                                value={Math.floor(
-                                                    settings.workTime / 60
-                                                )}
-                                                onChange={e =>
-                                                    handleSettingChange(
-                                                        'workTime',
-                                                        e.target.value
-                                                    )
-                                                }
-                                            />
-                                        </div>
-                                        <div className="setting-item">
-                                            <label htmlFor="breakTime">
-                                                Break Time (minutes)
-                                            </label>
-                                            <input
-                                                id="breakTime"
-                                                type="number"
-                                                min="1"
-                                                value={Math.floor(
-                                                    settings.breakTime / 60
-                                                )}
-                                                onChange={e =>
-                                                    handleSettingChange(
-                                                        'breakTime',
-                                                        e.target.value
-                                                    )
-                                                }
-                                            />
-                                        </div>
-                                        <div className="setting-item">
-                                            <label htmlFor="longBreakTime">
-                                                Long Break Time (minutes)
-                                            </label>
-                                            <input
-                                                id="longBreakTime"
-                                                type="number"
-                                                min="1"
-                                                value={Math.floor(
-                                                    settings.longBreakTime / 60
-                                                )}
-                                                onChange={e =>
-                                                    handleSettingChange(
-                                                        'longBreakTime',
-                                                        e.target.value
-                                                    )
-                                                }
-                                            />
-                                        </div>
-                                        <div className="setting-item">
-                                            <label htmlFor="sessionsUntilLongBreak">
-                                                Sessions Until Long Break
-                                            </label>
-                                            <input
-                                                id="sessionsUntilLongBreak"
-                                                type="number"
-                                                min="1"
-                                                value={
-                                                    settings.sessionsUntilLongBreak
-                                                }
-                                                onChange={e =>
-                                                    handleSettingChange(
-                                                        'sessionsUntilLongBreak',
-                                                        e.target.value
-                                                    )
-                                                }
-                                            />
-                                        </div>
-                                        <div className="setting-actions">
-                                            <button
-                                                className="setting-save-btn"
-                                                onClick={applySettings}
-                                            >
-                                                Save
-                                            </button>
-                                            <button
-                                                className="setting-cancel-btn"
-                                                onClick={closeSettings}
-                                            >
-                                                Cancel
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                                                <RotateCcw size={16} />
+                                            </IconButton>
+                                        </>
+                                    )}
+                                    <IconButton
+                                        size="small"
+                                        onClick={() => setIsSettingsOpen(true)}
+                                    >
+                                        <Settings size={16} />
+                                    </IconButton>
+                                </Stack>
+                            </Stack>
+                            <Divider />
+                            <Stack direction="row" spacing={2}>
+                                <Box>
+                                    <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                    >
+                                        Completed
+                                    </Typography>
+                                    <Typography variant="body2">
+                                        {stats.completedPomodoros}
+                                    </Typography>
+                                </Box>
+                                <Box>
+                                    <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                    >
+                                        Study Time
+                                    </Typography>
+                                    <Typography variant="body2">
+                                        {stats.totalStudyTime} min
+                                    </Typography>
+                                </Box>
+                                <Box>
+                                    <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                    >
+                                        Streak
+                                    </Typography>
+                                    <Typography variant="body2">
+                                        {stats.currentStreak}
+                                    </Typography>
+                                </Box>
+                            </Stack>
+                        </Stack>
+                    ) : (
+                        <Stack spacing={2}>
+                            <Stack
+                                direction="row"
+                                spacing={1}
+                                sx={{ alignItems: 'center' }}
+                            >
+                                <IconButton
+                                    size="small"
+                                    onClick={closeSettings}
+                                >
+                                    <ArrowLeft size={16} />
+                                </IconButton>
+                                <Typography variant="subtitle1">
+                                    Timer Settings
+                                </Typography>
+                            </Stack>
+                            <Stack spacing={2}>
+                                <TextField
+                                    label="Work Time (minutes)"
+                                    type="number"
+                                    slotProps={{ htmlInput: { min: 1 } }}
+                                    value={Math.floor(
+                                        activeSettings.workTime / 60
+                                    )}
+                                    onChange={e =>
+                                        handleSettingChange(
+                                            'workTime',
+                                            e.target.value
+                                        )
+                                    }
+                                />
+                                <TextField
+                                    label="Break Time (minutes)"
+                                    type="number"
+                                    slotProps={{ htmlInput: { min: 1 } }}
+                                    value={Math.floor(
+                                        activeSettings.breakTime / 60
+                                    )}
+                                    onChange={e =>
+                                        handleSettingChange(
+                                            'breakTime',
+                                            e.target.value
+                                        )
+                                    }
+                                />
+                                <TextField
+                                    label="Long Break Time (minutes)"
+                                    type="number"
+                                    slotProps={{ htmlInput: { min: 1 } }}
+                                    value={Math.floor(
+                                        activeSettings.longBreakTime / 60
+                                    )}
+                                    onChange={e =>
+                                        handleSettingChange(
+                                            'longBreakTime',
+                                            e.target.value
+                                        )
+                                    }
+                                />
+                                <TextField
+                                    label="Sessions Until Long Break"
+                                    type="number"
+                                    slotProps={{ htmlInput: { min: 1 } }}
+                                    value={
+                                        activeSettings.sessionsUntilLongBreak
+                                    }
+                                    onChange={e =>
+                                        handleSettingChange(
+                                            'sessionsUntilLongBreak',
+                                            e.target.value
+                                        )
+                                    }
+                                />
+                                <Stack direction="row" spacing={1}>
+                                    <Button
+                                        variant="contained"
+                                        onClick={applySettings}
+                                    >
+                                        Save
+                                    </Button>
+                                    <Button
+                                        variant="outlined"
+                                        onClick={closeSettings}
+                                    >
+                                        Cancel
+                                    </Button>
+                                </Stack>
+                            </Stack>
+                        </Stack>
                     )}
-                </>
+                </Box>
+            ) : (
+                <Popover
+                    open={isMenuOpen}
+                    anchorEl={menuAnchorEl}
+                    onClose={handleCloseMenu}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                    transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                    slotProps={{
+                        paper: { sx: { p: 2, borderRadius: 2, width: 280 } },
+                    }}
+                >
+                    {!isSettingsOpen ? (
+                        <Stack spacing={2}>
+                            <Stack
+                                direction="row"
+                                sx={{
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Typography variant="subtitle1">
+                                    {statusLabel}
+                                </Typography>
+                                <Stack direction="row" spacing={1}>
+                                    {!waitingToContinue && (
+                                        <>
+                                            <IconButton
+                                                size="small"
+                                                onClick={skipSession}
+                                                title={`Skip to end of ${isWorkMode ? 'work' : 'break'} session`}
+                                            >
+                                                <SkipForward size={16} />
+                                            </IconButton>
+                                            <IconButton
+                                                size="small"
+                                                onClick={() =>
+                                                    setShowResetTimerModal(true)
+                                                }
+                                            >
+                                                <RotateCcw size={16} />
+                                            </IconButton>
+                                        </>
+                                    )}
+                                    <IconButton
+                                        size="small"
+                                        onClick={() => setIsSettingsOpen(true)}
+                                    >
+                                        <Settings size={16} />
+                                    </IconButton>
+                                </Stack>
+                            </Stack>
+                            <Divider />
+                            <Stack direction="row" spacing={2}>
+                                <Box>
+                                    <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                    >
+                                        Completed
+                                    </Typography>
+                                    <Typography variant="body2">
+                                        {stats.completedPomodoros}
+                                    </Typography>
+                                </Box>
+                                <Box>
+                                    <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                    >
+                                        Study Time
+                                    </Typography>
+                                    <Typography variant="body2">
+                                        {stats.totalStudyTime} min
+                                    </Typography>
+                                </Box>
+                                <Box>
+                                    <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                    >
+                                        Streak
+                                    </Typography>
+                                    <Typography variant="body2">
+                                        {stats.currentStreak}
+                                    </Typography>
+                                </Box>
+                            </Stack>
+                        </Stack>
+                    ) : (
+                        <Stack spacing={2}>
+                            <Stack
+                                direction="row"
+                                sx={{
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Typography variant="subtitle1">
+                                    Timer Settings
+                                </Typography>
+                                <IconButton
+                                    size="small"
+                                    onClick={closeSettings}
+                                >
+                                    <X size={16} />
+                                </IconButton>
+                            </Stack>
+                            <TextField
+                                label="Work Time (minutes)"
+                                type="number"
+                                slotProps={{ htmlInput: { min: 1 } }}
+                                value={Math.floor(activeSettings.workTime / 60)}
+                                onChange={e =>
+                                    handleSettingChange(
+                                        'workTime',
+                                        e.target.value
+                                    )
+                                }
+                            />
+                            <TextField
+                                label="Break Time (minutes)"
+                                type="number"
+                                slotProps={{ htmlInput: { min: 1 } }}
+                                value={Math.floor(
+                                    activeSettings.breakTime / 60
+                                )}
+                                onChange={e =>
+                                    handleSettingChange(
+                                        'breakTime',
+                                        e.target.value
+                                    )
+                                }
+                            />
+                            <TextField
+                                label="Long Break Time (minutes)"
+                                type="number"
+                                slotProps={{ htmlInput: { min: 1 } }}
+                                value={Math.floor(
+                                    activeSettings.longBreakTime / 60
+                                )}
+                                onChange={e =>
+                                    handleSettingChange(
+                                        'longBreakTime',
+                                        e.target.value
+                                    )
+                                }
+                            />
+                            <TextField
+                                label="Sessions Until Long Break"
+                                type="number"
+                                slotProps={{ htmlInput: { min: 1 } }}
+                                value={activeSettings.sessionsUntilLongBreak}
+                                onChange={e =>
+                                    handleSettingChange(
+                                        'sessionsUntilLongBreak',
+                                        e.target.value
+                                    )
+                                }
+                            />
+                            <Stack direction="row" spacing={1}>
+                                <Button
+                                    variant="contained"
+                                    onClick={applySettings}
+                                >
+                                    Save
+                                </Button>
+                                <Button
+                                    variant="outlined"
+                                    onClick={closeSettings}
+                                >
+                                    Cancel
+                                </Button>
+                            </Stack>
+                        </Stack>
+                    )}
+                </Popover>
             )}
             <ConfirmModal
                 open={showResetTimerModal}
@@ -807,6 +768,6 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
                 }}
                 onCancel={() => setShowResetTimerModal(false)}
             />
-        </div>
+        </Box>
     );
 };

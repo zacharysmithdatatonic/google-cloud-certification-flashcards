@@ -1,4 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
+import {
+    Box,
+    IconButton,
+    Popover,
+    Stack,
+    Chip,
+    Typography,
+} from '@mui/material';
 import { Keyboard } from 'lucide-react';
 
 export interface ShortcutItem {
@@ -15,29 +23,19 @@ export const KeyboardShortcuts: React.FC<KeyboardShortcutsProps> = ({
     shortcuts,
     className = '',
 }) => {
-    const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
-    const keyboardHelpRef = useRef<HTMLDivElement>(null);
     const btnRef = useRef<HTMLButtonElement>(null);
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+    const isOpen = Boolean(anchorEl);
 
-    // Handle click outside
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (
-                keyboardHelpRef.current &&
-                !keyboardHelpRef.current.contains(event.target as Node) &&
-                btnRef.current &&
-                !btnRef.current.contains(event.target as Node) &&
-                showKeyboardHelp
-            ) {
-                setShowKeyboardHelp(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [showKeyboardHelp]);
+    const handleToggle = (
+        event: React.MouseEvent<HTMLButtonElement> | null
+    ) => {
+        if (isOpen) {
+            setAnchorEl(null);
+            return;
+        }
+        setAnchorEl(event?.currentTarget || btnRef.current);
+    };
 
     // Handle ? key press
     useEffect(() => {
@@ -50,41 +48,57 @@ export const KeyboardShortcuts: React.FC<KeyboardShortcutsProps> = ({
                 )
             ) {
                 event.preventDefault();
-                setShowKeyboardHelp(!showKeyboardHelp);
+                if (isOpen) {
+                    setAnchorEl(null);
+                } else if (btnRef.current) {
+                    setAnchorEl(btnRef.current);
+                }
             }
         };
 
         window.addEventListener('keydown', handleKeyPress);
         return () => window.removeEventListener('keydown', handleKeyPress);
-    }, [showKeyboardHelp]);
+    }, [isOpen]);
 
     return (
-        <div className={`keyboard-shortcuts ${className}`}>
-            <button
-                onClick={() => setShowKeyboardHelp(!showKeyboardHelp)}
-                className="header-metrics-btn"
+        <Box className={className}>
+            <IconButton
+                onClick={handleToggle}
                 ref={btnRef}
                 title="Toggle keyboard shortcuts"
                 aria-haspopup="true"
-                aria-expanded={showKeyboardHelp}
+                aria-expanded={isOpen}
             >
                 <Keyboard size={20} />
-            </button>
-            {showKeyboardHelp && (
-                <div
-                    className="header-metrics-dropdown"
-                    ref={keyboardHelpRef}
-                    tabIndex={-1}
-                    role="menu"
-                >
+            </IconButton>
+            <Popover
+                open={isOpen}
+                anchorEl={anchorEl}
+                onClose={() => setAnchorEl(null)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                slotProps={{ paper: { sx: { p: 2, borderRadius: 2 } } }}
+            >
+                <Stack spacing={1}>
                     {shortcuts.map((shortcut, index) => (
-                        <div key={index} className="shortcut-item">
-                            <span className="key">{shortcut.key}</span>
-                            <span>{shortcut.description}</span>
-                        </div>
+                        <Stack
+                            key={index}
+                            direction="row"
+                            spacing={1}
+                            sx={{ alignItems: 'center' }}
+                        >
+                            <Chip
+                                label={shortcut.key}
+                                size="small"
+                                variant="outlined"
+                            />
+                            <Typography variant="body2">
+                                {shortcut.description}
+                            </Typography>
+                        </Stack>
                     ))}
-                </div>
-            )}
-        </div>
+                </Stack>
+            </Popover>
+        </Box>
     );
 };

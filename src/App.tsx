@@ -1,4 +1,23 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+    AppBar,
+    Toolbar,
+    Box,
+    Typography,
+    IconButton,
+    Button,
+    Stack,
+    Drawer,
+    LinearProgress,
+    Menu as MuiMenu,
+    Container,
+    Card,
+    CardContent,
+    CardActionArea,
+    Chip,
+    useMediaQuery,
+} from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import {
     Question,
     QuestionPerformance,
@@ -46,7 +65,6 @@ import {
     Sparkles,
     Home,
 } from 'lucide-react';
-import './App.css';
 import { ConfirmModal } from './components/ConfirmModal';
 import { CertificationSelector } from './components/CertificationSelector';
 
@@ -77,16 +95,29 @@ const AccuracyDisplay: React.FC<{
             : Math.round((totalCorrect / totalAttempts) * 100);
 
     return (
-        <div className="header-accuracy">
+        <Stack
+            direction="row"
+            spacing={1}
+            sx={{ alignItems: 'center', flexWrap: 'wrap' }}
+        >
             <BarChart3 size={16} />
-            <span className="accuracy-title">Average Accuracy:</span>
-            <span className="accuracy-percentage">{accuracy}%</span>
-            <span className="accuracy-details">
-                ({totalCorrect}{' '}
-                <CheckCircle className="correct-icon" size={16} /> /{' '}
-                {totalAttempts} total
-            </span>
-        </div>
+            <Typography variant="body2" color="text.secondary">
+                Average Accuracy:
+            </Typography>
+            <Typography variant="subtitle2">{accuracy}%</Typography>
+            <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{
+                    display: { xs: 'none', md: 'inline-flex' },
+                    alignItems: 'center',
+                    gap: 0.5,
+                }}
+            >
+                ({totalCorrect}
+                <CheckCircle size={16} /> / {totalAttempts} total)
+            </Typography>
+        </Stack>
     );
 };
 
@@ -99,18 +130,43 @@ const ProgressBar: React.FC<{
     const percentage = total > 0 ? (current / total) * 100 : 0;
 
     return (
-        <div className={`header-progress-container ${className}`}>
-            <div className="header-progress-bar">
-                <div
-                    className="header-progress-fill"
-                    style={{ width: `${percentage}%` }}
-                />
-            </div>
-            <p className="header-progress-text">
+        <Box
+            className={className}
+            sx={{
+                minWidth: { xs: 100, md: 150 },
+                maxWidth: 260,
+                width: '100%',
+            }}
+        >
+            <LinearProgress
+                variant="determinate"
+                value={percentage}
+                sx={{
+                    height: 6,
+                    borderRadius: 999,
+                    bgcolor: 'divider',
+                    '& .MuiLinearProgress-bar': {
+                        borderRadius: 999,
+                        bgcolor: 'primary.main',
+                    },
+                }}
+            />
+            <Stack
+                direction="row"
+                spacing={0.5}
+                sx={{
+                    mt: 1,
+                    color: 'text.secondary',
+                    display: { xs: 'none', md: 'flex' },
+                    alignItems: 'center',
+                }}
+            >
                 <TrendingUp size={14} />
-                {current} of {total} questions answered
-            </p>
-        </div>
+                <Typography variant="caption">
+                    {current} of {total} questions answered
+                </Typography>
+            </Stack>
+        </Box>
     );
 };
 
@@ -167,14 +223,15 @@ function App() {
         return saved ? JSON.parse(saved) : { totalStudyTime: 0 };
     });
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const sidebarRef = useRef<HTMLDivElement | null>(null);
-    const [metricsDropdownOpen, setMetricsDropdownOpen] = useState(false);
-    const metricsBtnRef = useRef<HTMLButtonElement | null>(null);
-    const metricsDropdownRef = useRef<HTMLDivElement | null>(null);
+    const [metricsAnchorEl, setMetricsAnchorEl] = useState<null | HTMLElement>(
+        null
+    );
     const [selectedBank, setSelectedBank] = useState<QuestionBank | null>(
         getInitialBank
     );
     const [showResetStatsModal, setShowResetStatsModal] = useState(false);
+    const theme = useTheme();
+    const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 
     // Save selected bank to local storage
     useEffect(() => {
@@ -183,76 +240,13 @@ function App() {
         }
     }, [selectedBank]);
 
-    // Accessibility: Focus trap and ESC key for sidebar
-    useEffect(() => {
-        if (!isSidebarOpen) return;
-        const focusableSelectors = [
-            'button',
-            'a',
-            'input',
-            'select',
-            'textarea',
-            '[tabindex]:not([tabindex="-1"])',
-        ];
-        const sidebar = sidebarRef.current;
-        if (!sidebar) return;
-        const focusableEls = sidebar.querySelectorAll<HTMLElement>(
-            focusableSelectors.join(',')
-        );
-        const firstEl = focusableEls[0];
-        const lastEl = focusableEls[focusableEls.length - 1];
-        if (firstEl) firstEl.focus();
+    const handleOpenMetrics = (event: React.MouseEvent<HTMLElement>) => {
+        setMetricsAnchorEl(event.currentTarget);
+    };
 
-        function handleKeyDown(e: KeyboardEvent) {
-            if (e.key === 'Escape') {
-                setIsSidebarOpen(false);
-            } else if (e.key === 'Tab') {
-                if (focusableEls.length === 0) return;
-                if (e.shiftKey) {
-                    if (document.activeElement === firstEl) {
-                        e.preventDefault();
-                        lastEl.focus();
-                    }
-                } else {
-                    if (document.activeElement === lastEl) {
-                        e.preventDefault();
-                        firstEl.focus();
-                    }
-                }
-            }
-        }
-        document.addEventListener('keydown', handleKeyDown);
-        return () => document.removeEventListener('keydown', handleKeyDown);
-    }, [isSidebarOpen]);
-
-    // Prevent background scroll when sidebar is open
-    useEffect(() => {
-        if (isSidebarOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
-        }
-        return () => {
-            document.body.style.overflow = '';
-        };
-    }, [isSidebarOpen]);
-
-    // Close dropdown on outside click
-    useEffect(() => {
-        if (!metricsDropdownOpen) return;
-        function handleClick(e: MouseEvent) {
-            if (
-                metricsDropdownRef.current &&
-                !metricsDropdownRef.current.contains(e.target as Node) &&
-                metricsBtnRef.current &&
-                !metricsBtnRef.current.contains(e.target as Node)
-            ) {
-                setMetricsDropdownOpen(false);
-            }
-        }
-        document.addEventListener('mousedown', handleClick);
-        return () => document.removeEventListener('mousedown', handleClick);
-    }, [metricsDropdownOpen]);
+    const handleCloseMetrics = () => {
+        setMetricsAnchorEl(null);
+    };
 
     // Update study time stats when bank changes
     useEffect(() => {
@@ -532,81 +526,112 @@ function App() {
 
     // Sidebar content as a separate component
     const HeaderSidebar = () => (
-        <aside
-            className="header-sidebar"
-            ref={sidebarRef}
-            aria-modal="true"
-            role="dialog"
-            tabIndex={-1}
-            aria-labelledby="sidebar-heading"
-        >
-            <button
-                className="sidebar-close-btn"
-                aria-label="Close sidebar"
-                onClick={() => setIsSidebarOpen(false)}
-                autoFocus
+        <Box sx={{ width: 320, maxWidth: '90vw', p: 2 }}>
+            <Stack direction="row" sx={{ justifyContent: 'flex-end' }}>
+                <IconButton
+                    aria-label="Close sidebar"
+                    onClick={() => setIsSidebarOpen(false)}
+                >
+                    <X size={20} />
+                </IconButton>
+            </Stack>
+            <Stack
+                direction="row"
+                spacing={1}
+                sx={{ alignItems: 'center', mb: 2 }}
             >
-                <X size={24} />
-            </button>
-            {/* App logo and title at the top of the sidebar */}
-            <div className="sidebar-app-title">
                 {selectedBank?.key === 'genai' ? (
-                    <Sparkles size={24} />
+                    <Sparkles size={22} />
                 ) : (
-                    <Brain size={24} />
+                    <Brain size={22} />
                 )}
-                <span>{selectedBank?.name || 'Certification'} Flashcards</span>
-            </div>
-            <div className="sidebar-content">
-                {/* Home button to go back to certification selector */}
-                <button
-                    className="sidebar-home-btn"
+                <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
+                    {selectedBank?.name || 'Certification'} Flashcards
+                </Typography>
+            </Stack>
+            <Stack spacing={2}>
+                <Button
+                    variant="text"
+                    startIcon={<Home size={18} />}
                     onClick={() => {
                         setSelectedBank(null);
                         setCurrentMode(null);
                         setIsSidebarOpen(false);
                         window.scrollTo(0, 0);
                     }}
+                    sx={{ justifyContent: 'flex-start' }}
                 >
-                    <Home size={18} />
-                    <span>Change Certification</span>
-                </button>
-                <section className="sidebar-section">
-                    <h3 className="sidebar-section-label">Accuracy</h3>
+                    Change Certification
+                </Button>
+                <Box>
+                    <Typography
+                        variant="overline"
+                        color="text.secondary"
+                        sx={{ display: 'block', mb: 1 }}
+                    >
+                        Accuracy
+                    </Typography>
                     <AccuracyDisplay
                         performance={performance}
                         questions={questions}
                     />
-                </section>
-                <section className="sidebar-section">
-                    <h3 className="sidebar-section-label">Progress</h3>
+                </Box>
+                <Box>
+                    <Typography
+                        variant="overline"
+                        color="text.secondary"
+                        sx={{ display: 'block', mb: 1 }}
+                    >
+                        Progress
+                    </Typography>
                     <ProgressBar
                         current={stats.totalAnswered}
                         total={questions.length}
                     />
-                </section>
-                <section className="sidebar-section">
-                    <h3 className="sidebar-section-label">Pomodoro Timer</h3>
+                </Box>
+                <Box>
+                    <Typography
+                        variant="overline"
+                        color="text.secondary"
+                        sx={{ display: 'block', mb: 1 }}
+                    >
+                        Pomodoro Timer
+                    </Typography>
                     <PomodoroTimer
                         onStudyTimeUpdate={handleStudyTimeUpdate}
                         sidebarMode={true}
                     />
-                </section>
-                <section>
-                    <div className="keyboard-help">
-                        <h3 className="sidebar-section-label">
-                            Keyboard Shortcuts
-                        </h3>
+                </Box>
+                <Box>
+                    <Typography
+                        variant="overline"
+                        color="text.secondary"
+                        sx={{ display: 'block', mb: 1 }}
+                    >
+                        Keyboard Shortcuts
+                    </Typography>
+                    <Stack spacing={1}>
                         {getShortcuts().map((shortcut, index) => (
-                            <div key={index} className="shortcut-item">
-                                <span className="key">{shortcut.key}</span>
-                                <span>{shortcut.description}</span>
-                            </div>
+                            <Stack
+                                key={index}
+                                direction="row"
+                                spacing={1}
+                                sx={{ alignItems: 'center' }}
+                            >
+                                <Chip
+                                    label={shortcut.key}
+                                    size="small"
+                                    variant="outlined"
+                                />
+                                <Typography variant="body2">
+                                    {shortcut.description}
+                                </Typography>
+                            </Stack>
                         ))}
-                    </div>
-                </section>
-            </div>
-        </aside>
+                    </Stack>
+                </Box>
+            </Stack>
+        </Box>
     );
 
     // Handler for going back to certification selector
@@ -628,153 +653,238 @@ function App() {
             appLogo = <Sparkles size={24} />;
         }
         return (
-            <header className="app-header">
-                <div className="header-left">
-                    {currentMode ? (
-                        <>
-                            <button
-                                onClick={handleBackToMenu}
-                                className="back-button"
-                            >
-                                <ArrowLeft size={16} />
-                                <span className="back-text">Menu</span>
-                            </button>
-                            <div className="mode-indicator">
-                                {currentMode === 'flashcard' && (
-                                    <>
-                                        <BookOpen size={16} />
-                                        <span>Flashcard Mode</span>
-                                    </>
-                                )}
-                                {currentMode === 'quiz' && (
-                                    <>
-                                        <Brain size={16} />
-                                        <span>Quiz Mode</span>
-                                    </>
-                                )}
-                                {currentMode === 'review' && (
-                                    <>
-                                        <RotateCcw size={16} />
-                                        <span>Review Mode</span>
-                                    </>
-                                )}
-                                {currentMode === 'fill-in-blank' && (
-                                    <>
-                                        <Edit3 size={16} />
-                                        <span>Fill-in-Blank Mode</span>
-                                    </>
-                                )}
-                                {currentMode === 'memorise' && (
-                                    <>
-                                        <List size={16} />
-                                        <span>Memorise Mode</span>
-                                    </>
-                                )}
-                            </div>
-                        </>
-                    ) : (
-                        <>
-                            <button
-                                onClick={handleBackToCertifications}
-                                className="home-button"
-                                title="Change certification"
-                            >
-                                <Home size={20} />
-                            </button>
-                            <h1>
-                                {appLogo}
-                                <span>{appName}</span>
-                            </h1>
-                        </>
-                    )}
-                </div>
-                {/* Hamburger menu only on small screens */}
-                <button
-                    className="header-toggle"
-                    aria-label={isSidebarOpen ? 'Close menu' : 'Open menu'}
-                    aria-controls="header-sidebar"
-                    aria-expanded={isSidebarOpen}
-                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            <AppBar
+                position="sticky"
+                color="transparent"
+                elevation={0}
+                sx={{ borderBottom: 1, borderColor: 'divider' }}
+            >
+                <Toolbar
+                    sx={{
+                        gap: 2,
+                        flexWrap: 'wrap',
+                        minHeight: 56,
+                        px: { xs: 2, md: 3 },
+                        py: 1,
+                    }}
                 >
-                    {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
-                </button>
-                {/* Inline header content for large screens only */}
-                <div className="header-right">
-                    <PomodoroTimer onStudyTimeUpdate={handleStudyTimeUpdate} />
-                    <div className="header-metrics-wrapper">
-                        <button
-                            className="header-metrics-btn"
-                            ref={metricsBtnRef}
-                            aria-label="Show metrics"
-                            aria-haspopup="true"
-                            aria-expanded={metricsDropdownOpen}
-                            onClick={() => setMetricsDropdownOpen(v => !v)}
-                        >
-                            <BarChart3 size={22} />
-                        </button>
-                        {metricsDropdownOpen && (
-                            <div
-                                className="header-metrics-dropdown"
-                                ref={metricsDropdownRef}
-                                tabIndex={-1}
-                                role="menu"
-                            >
-                                <AccuracyDisplay
-                                    performance={performance}
-                                    questions={questions}
+                    <Stack
+                        direction="row"
+                        spacing={1}
+                        sx={{
+                            alignItems: 'center',
+                            flexWrap: 'wrap',
+                            flex: 1,
+                        }}
+                    >
+                        {currentMode ? (
+                            <>
+                                <Button
+                                    onClick={handleBackToMenu}
+                                    startIcon={<ArrowLeft size={16} />}
+                                    variant="text"
+                                >
+                                    Menu
+                                </Button>
+                                <Chip
+                                    icon={
+                                        currentMode === 'flashcard' ? (
+                                            <BookOpen size={16} />
+                                        ) : currentMode === 'quiz' ? (
+                                            <Brain size={16} />
+                                        ) : currentMode === 'review' ? (
+                                            <RotateCcw size={16} />
+                                        ) : currentMode === 'fill-in-blank' ? (
+                                            <Edit3 size={16} />
+                                        ) : (
+                                            <List size={16} />
+                                        )
+                                    }
+                                    label={
+                                        currentMode === 'flashcard'
+                                            ? 'Flashcard Mode'
+                                            : currentMode === 'quiz'
+                                              ? 'Quiz Mode'
+                                              : currentMode === 'review'
+                                                ? 'Review Mode'
+                                                : currentMode ===
+                                                    'fill-in-blank'
+                                                  ? 'Fill-in-Blank Mode'
+                                                  : 'Memorise Mode'
+                                    }
+                                    color="primary"
+                                    variant="outlined"
+                                    sx={{ bgcolor: 'primary.light' }}
                                 />
-                                <ProgressBar
-                                    current={stats.totalAnswered}
-                                    total={questions.length}
-                                />
-                            </div>
+                            </>
+                        ) : (
+                            <>
+                                <IconButton
+                                    onClick={handleBackToCertifications}
+                                    aria-label="Change certification"
+                                >
+                                    <Home size={20} />
+                                </IconButton>
+                                <Stack direction="row" spacing={1}>
+                                    {appLogo}
+                                    <Typography variant="h6">
+                                        {appName}
+                                    </Typography>
+                                </Stack>
+                            </>
                         )}
-                    </div>
-                    <KeyboardShortcuts shortcuts={getShortcuts()} />
-                </div>
-            </header>
+                    </Stack>
+                    {isDesktop ? (
+                        <Stack
+                            direction="row"
+                            spacing={2}
+                            sx={{ alignItems: 'center' }}
+                        >
+                            <PomodoroTimer
+                                onStudyTimeUpdate={handleStudyTimeUpdate}
+                            />
+                            <IconButton
+                                aria-label="Show metrics"
+                                onClick={handleOpenMetrics}
+                            >
+                                <BarChart3 size={22} />
+                            </IconButton>
+                            <MuiMenu
+                                anchorEl={metricsAnchorEl}
+                                open={Boolean(metricsAnchorEl)}
+                                onClose={handleCloseMetrics}
+                                transformOrigin={{
+                                    vertical: 'top',
+                                    horizontal: 'right',
+                                }}
+                                anchorOrigin={{
+                                    vertical: 'bottom',
+                                    horizontal: 'right',
+                                }}
+                                slotProps={{
+                                    paper: {
+                                        sx: {
+                                            p: 2,
+                                            borderRadius: 2,
+                                            minWidth: 240,
+                                        },
+                                    },
+                                }}
+                            >
+                                <Stack spacing={2}>
+                                    <AccuracyDisplay
+                                        performance={performance}
+                                        questions={questions}
+                                    />
+                                    <ProgressBar
+                                        current={stats.totalAnswered}
+                                        total={questions.length}
+                                    />
+                                </Stack>
+                            </MuiMenu>
+                            <KeyboardShortcuts shortcuts={getShortcuts()} />
+                        </Stack>
+                    ) : (
+                        <IconButton
+                            aria-label={
+                                isSidebarOpen ? 'Close menu' : 'Open menu'
+                            }
+                            aria-expanded={isSidebarOpen}
+                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                        >
+                            {isSidebarOpen ? (
+                                <X size={24} />
+                            ) : (
+                                <Menu size={24} />
+                            )}
+                        </IconButton>
+                    )}
+                </Toolbar>
+            </AppBar>
         );
     };
 
     // Show certification selector if no bank is selected
     if (!selectedBank) {
         return (
-            <div className="app cert-selector-page">
+            <Box
+                sx={{
+                    minHeight: '100vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                }}
+            >
                 <CertificationSelector
                     onSelectBank={bank => {
                         setSelectedBank(bank);
                         window.scrollTo(0, 0);
                     }}
                 />
-            </div>
+            </Box>
         );
     }
 
     if (isLoading) {
         return (
-            <div className="app">
-                <div className="loading">
-                    <div className="loading-spinner"></div>
-                    <p>Loading questions...</p>
-                </div>
-            </div>
+            <Box
+                sx={{
+                    minHeight: '100vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                }}
+            >
+                {renderHeader()}
+                <Stack
+                    spacing={2}
+                    sx={{
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flex: 1,
+                    }}
+                >
+                    <LinearProgress sx={{ width: 200 }} />
+                    <Typography variant="body1">
+                        Loading questions...
+                    </Typography>
+                </Stack>
+            </Box>
         );
     }
 
     if (currentMode === 'memorise') {
         return (
-            <div className="app">
+            <Box
+                sx={{
+                    minHeight: '100vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                }}
+            >
                 {renderHeader()}
-                <MemoriseMode questions={questions} performance={performance} />
-            </div>
+                <Box sx={{ flex: 1 }}>
+                    <MemoriseMode
+                        questions={questions}
+                        performance={performance}
+                    />
+                </Box>
+            </Box>
         );
     }
 
     if (currentMode && currentQuestions.length > 0) {
         return (
-            <div className="app">
+            <Box
+                sx={{
+                    minHeight: '100vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                }}
+            >
                 {renderHeader()}
-                <main className="app-main">
+                <Container
+                    sx={{ flex: 1, py: 4, maxWidth: 1000 }}
+                    maxWidth={false}
+                >
                     {currentMode === 'flashcard' ? (
                         <FlashcardMode
                             questions={currentQuestions}
@@ -812,148 +922,254 @@ function App() {
                             performance={performance}
                         />
                     )}
-                </main>
-            </div>
+                </Container>
+            </Box>
         );
     }
 
     return (
-        <div className="app">
+        <Box
+            sx={{
+                minHeight: '100vh',
+                display: 'flex',
+                flexDirection: 'column',
+            }}
+        >
             {renderHeader()}
-            {/* Sidebar and overlay for small screens */}
-            {isSidebarOpen && (
-                <div
-                    className="header-overlay"
-                    aria-label="Sidebar overlay"
-                    onClick={() => setIsSidebarOpen(false)}
-                    tabIndex={-1}
-                />
-            )}
-            {isSidebarOpen && <HeaderSidebar />}
-            <main className="app-main">
-                <div className="stats-overview">
-                    <h2>Progress Overview</h2>
-
-                    <div className="stats-grid">
-                        <div className="stat-card">
-                            <FileText size={20} />
-                            <h3>Questions</h3>
-                            <p className="stat-number">{questions.length}</p>
-                        </div>
-                        <div className="stat-card">
-                            <CheckCircle size={20} />
-                            <h3>Answered</h3>
-                            <p className="stat-number">{stats.totalAnswered}</p>
-                        </div>
-                        <div className="stat-card">
-                            <Target size={20} />
-                            <h3>Accuracy</h3>
-                            <p className="stat-number">
-                                {stats.accuracy.toFixed(1)}%
-                            </p>
-                        </div>
-                        <div className="stat-card">
-                            <AlertCircle size={20} />
-                            <h3>Need Review</h3>
-                            <p className="stat-number">
-                                {reviewQuestions.length}
-                            </p>
-                        </div>
-                        <div className="stat-card">
-                            <Clock size={20} />
-                            <h3>Study Time</h3>
-                            <p className="stat-number">
-                                {Math.floor(studyTimeStats.totalStudyTime / 60)}
-                                h {studyTimeStats.totalStudyTime % 60}m
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="mode-selection">
-                    <h2>Choose Study Mode</h2>
-
-                    <div className="mode-grid">
-                        <button
-                            onClick={() => startMode('flashcard')}
-                            className="mode-button flashcard-mode"
+            <Drawer
+                anchor="right"
+                open={isSidebarOpen}
+                onClose={() => setIsSidebarOpen(false)}
+                ModalProps={{ keepMounted: true }}
+                sx={{ display: { md: 'none' } }}
+            >
+                <HeaderSidebar />
+            </Drawer>
+            <Container sx={{ flex: 1, py: 4, maxWidth: 1000 }} maxWidth={false}>
+                <Stack spacing={4}>
+                    <Box>
+                        <Typography
+                            variant="h5"
+                            sx={{ textAlign: 'center', mb: 2 }}
                         >
-                            <BookOpen size={32} />
-                            <h3>Flashcard Mode</h3>
-                            <p>
-                                Study questions one at a time. See the question,
-                                then reveal the answer.
-                            </p>
-                        </button>
-
-                        <button
-                            onClick={() => startMode('quiz')}
-                            className="mode-button quiz-mode"
+                            Progress Overview
+                        </Typography>
+                        <Box
+                            sx={{
+                                display: 'grid',
+                                gap: 2,
+                                gridTemplateColumns: {
+                                    xs: 'repeat(2, 1fr)',
+                                    sm: 'repeat(3, 1fr)',
+                                    md: 'repeat(5, 1fr)',
+                                },
+                            }}
                         >
-                            <Brain size={32} />
-                            <h3>Quiz Mode</h3>
-                            <p>
-                                Test your knowledge with multiple choice
-                                questions.
-                            </p>
-                        </button>
+                            {[
+                                {
+                                    label: 'Questions',
+                                    value: questions.length,
+                                    icon: <FileText size={20} />,
+                                },
+                                {
+                                    label: 'Answered',
+                                    value: stats.totalAnswered,
+                                    icon: <CheckCircle size={20} />,
+                                },
+                                {
+                                    label: 'Accuracy',
+                                    value: `${stats.accuracy.toFixed(1)}%`,
+                                    icon: <Target size={20} />,
+                                },
+                                {
+                                    label: 'Need Review',
+                                    value: reviewQuestions.length,
+                                    icon: <AlertCircle size={20} />,
+                                },
+                                {
+                                    label: 'Study Time',
+                                    value: `${Math.floor(
+                                        studyTimeStats.totalStudyTime / 60
+                                    )}h ${studyTimeStats.totalStudyTime % 60}m`,
+                                    icon: <Clock size={20} />,
+                                },
+                            ].map(stat => (
+                                <Card key={stat.label}>
+                                    <CardContent>
+                                        <Stack
+                                            spacing={1}
+                                            sx={{
+                                                alignItems: 'center',
+                                                textAlign: 'center',
+                                            }}
+                                        >
+                                            {stat.icon}
+                                            <Typography
+                                                variant="overline"
+                                                color="text.secondary"
+                                            >
+                                                {stat.label}
+                                            </Typography>
+                                            <Typography variant="h6">
+                                                {stat.value}
+                                            </Typography>
+                                        </Stack>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </Box>
+                    </Box>
 
-                        <button
-                            onClick={() => startMode('review')}
-                            className="mode-button review-mode"
-                            disabled={reviewQuestions.length === 0}
+                    <Box>
+                        <Typography
+                            variant="h5"
+                            sx={{ textAlign: 'center', mb: 2 }}
                         >
-                            <RotateCcw size={32} />
-                            <h3>Review Mode</h3>
-                            <p>
-                                Focus on questions you got wrong or haven't
-                                answered yet.
-                            </p>
-                            {reviewQuestions.length === 0 && (
-                                <span className="mode-disabled">
-                                    No questions need review
-                                </span>
-                            )}
-                        </button>
-
-                        <button
-                            onClick={() => startMode('memorise')}
-                            className="mode-button memorise-mode"
+                            Choose Study Mode
+                        </Typography>
+                        <Box
+                            sx={{
+                                display: 'grid',
+                                gap: 2,
+                                gridTemplateColumns: {
+                                    xs: '1fr',
+                                    sm: 'repeat(2, 1fr)',
+                                },
+                            }}
                         >
-                            <List size={32} />
-                            <h3>Memorise Mode</h3>
-                            <p>
-                                Browse all questions and answers with
-                                performance tracking.
-                            </p>
-                        </button>
+                            {[
+                                {
+                                    key: 'flashcard',
+                                    label: 'Flashcard Mode',
+                                    description:
+                                        'Study questions one at a time. See the question, then reveal the answer.',
+                                    icon: <BookOpen size={28} />,
+                                    color: '#1a73e8',
+                                    disabled: false,
+                                },
+                                {
+                                    key: 'quiz',
+                                    label: 'Quiz Mode',
+                                    description:
+                                        'Test your knowledge with multiple choice questions.',
+                                    icon: <Brain size={28} />,
+                                    color: '#1e8e3e',
+                                    disabled: false,
+                                },
+                                {
+                                    key: 'review',
+                                    label: 'Review Mode',
+                                    description:
+                                        "Focus on questions you got wrong or haven't answered yet.",
+                                    icon: <RotateCcw size={28} />,
+                                    color: '#f9ab00',
+                                    disabled: reviewQuestions.length === 0,
+                                    badge:
+                                        reviewQuestions.length === 0
+                                            ? 'No questions need review'
+                                            : undefined,
+                                },
+                                {
+                                    key: 'memorise',
+                                    label: 'Memorise Mode',
+                                    description:
+                                        'Browse all questions and answers with performance tracking.',
+                                    icon: <List size={28} />,
+                                    color: '#9334e6',
+                                    disabled: false,
+                                },
+                                {
+                                    key: 'fill-in-blank',
+                                    label: 'Fill-in-the-Blank Mode',
+                                    description:
+                                        'Complete answers by filling in missing technical keywords.',
+                                    icon: <Edit3 size={28} />,
+                                    color: '#ea4335',
+                                    disabled: false,
+                                },
+                            ].map(mode => (
+                                <Card
+                                    key={mode.key}
+                                    sx={{
+                                        borderLeft: `4px solid ${mode.color}`,
+                                        opacity: mode.disabled ? 0.6 : 1,
+                                        minHeight: 160,
+                                    }}
+                                >
+                                    <CardActionArea
+                                        onClick={() =>
+                                            startMode(mode.key as StudyMode)
+                                        }
+                                        disabled={mode.disabled}
+                                        sx={{ height: '100%' }}
+                                    >
+                                        <CardContent sx={{ height: '100%' }}>
+                                            <Stack
+                                                spacing={1}
+                                                sx={{ height: '100%' }}
+                                            >
+                                                <Stack
+                                                    direction="row"
+                                                    spacing={1}
+                                                    sx={{
+                                                        alignItems: 'center',
+                                                    }}
+                                                >
+                                                    {mode.icon}
+                                                    <Typography variant="h6">
+                                                        {mode.label}
+                                                    </Typography>
+                                                </Stack>
+                                                <Typography
+                                                    variant="body2"
+                                                    color="text.secondary"
+                                                >
+                                                    {mode.description}
+                                                </Typography>
+                                                {mode.badge ? (
+                                                    <Typography
+                                                        variant="caption"
+                                                        color="error"
+                                                    >
+                                                        {mode.badge}
+                                                    </Typography>
+                                                ) : null}
+                                            </Stack>
+                                        </CardContent>
+                                    </CardActionArea>
+                                </Card>
+                            ))}
+                        </Box>
+                    </Box>
+                </Stack>
+            </Container>
 
-                        <button
-                            onClick={() => startMode('fill-in-blank')}
-                            className="mode-button fill-in-blank-mode"
-                        >
-                            <Edit3 size={32} />
-                            <h3>Fill-in-the-Blank Mode</h3>
-                            <p>
-                                Complete answers by filling in missing technical
-                                keywords.
-                            </p>
-                        </button>
-                    </div>
-                </div>
-            </main>
-
-            <footer className="app-footer">
+            <Box
+                component="footer"
+                sx={{
+                    borderTop: 1,
+                    borderColor: 'divider',
+                    py: 2,
+                    px: 3,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    flexWrap: 'wrap',
+                }}
+            >
                 <Heart size={16} />
-                <p>Keep practicing to ace your Google Cloud certification!</p>
-                <button
-                    className="reset-stats-btn"
-                    title="Reset all statistics"
+                <Typography variant="body2" color="text.secondary">
+                    Keep practicing to ace your Google Cloud certification!
+                </Typography>
+                <Button
+                    variant="text"
+                    color="secondary"
                     onClick={() => setShowResetStatsModal(true)}
+                    sx={{ marginLeft: 'auto' }}
                 >
                     Reset Statistics
-                </button>
-            </footer>
+                </Button>
+            </Box>
             <ConfirmModal
                 open={showResetStatsModal}
                 title="Reset All Statistics?"
@@ -966,7 +1182,7 @@ function App() {
                 }}
                 onCancel={() => setShowResetStatsModal(false)}
             />
-        </div>
+        </Box>
     );
 }
 
