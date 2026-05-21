@@ -47,3 +47,12 @@ export const resolveAssetPath = (assetPath?: string | null) => {
     }
     return getAssetUrl(assetPath);
 };
+
+export const getRedirectPath = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirectParam = urlParams.get('redirect');
+    if (!redirectParam) return null;
+    const decoded = decodeURIComponent(redirectParam);
+    const targetUrl = new URL(decoded, window.location.origin);
+    return `${targetUrl.pathname}${targetUrl.search}${targetUrl.hash}`;
+};

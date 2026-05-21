@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Redirecting...</title>
+        <script>
+            (function () {
+                var currentPath = window.location.pathname + window.location.search + window.location.hash;
+                var basePath = '/google-cloud-certification-flashcards';
+                var targetBase = currentPath.startsWith(basePath)
+                    ? basePath
+                    : '';
+                var redirectUrl =
+                    targetBase +
+                    '/?redirect=' +
+                    encodeURIComponent(currentPath);
+                window.location.replace(redirectUrl);
+            })();
+        </script>
+    </head>
+    <body></body>
+</html>

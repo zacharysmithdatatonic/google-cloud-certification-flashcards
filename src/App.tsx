@@ -36,7 +36,7 @@ import {
     savePerformanceToStorage,
     loadPerformanceFromStorage,
 } from './utils/performance';
-import { getBasePath } from './utils/url';
+import { getBasePath, getRedirectPath } from './utils/url';
 import { FlashcardMode } from './components/FlashcardMode';
 import { QuizMode } from './components/QuizMode';
 import { ReviewMode } from './components/ReviewMode';
@@ -242,6 +242,10 @@ const getBankPath = (bank: QuestionBank) => {
 const getBankFromPath = (): QuestionBank | null => {
     const basePath = getBasePath();
     let path = window.location.pathname;
+    const redirectPath = getRedirectPath();
+    if (redirectPath) {
+        path = new URL(redirectPath, window.location.origin).pathname;
+    }
     if (basePath && path.startsWith(basePath)) {
         path = path.slice(basePath.length) || '/';
     }
@@ -367,6 +371,13 @@ function App() {
             localStorage.setItem('last-used-bank', selectedBank.key);
         }
     }, [selectedBank]);
+
+    useEffect(() => {
+        const redirectPath = getRedirectPath();
+        if (!redirectPath) return;
+        const redirectUrl = new URL(redirectPath, window.location.origin);
+        window.history.replaceState({}, '', redirectUrl.toString());
+    }, []);
 
     useEffect(() => {
         setBankInURL(selectedBank);
