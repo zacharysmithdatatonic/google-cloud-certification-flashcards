@@ -1,10 +1,20 @@
 import { Question } from '../types';
 
-// JSON structure from the question bank
-interface RawQuestion {
+// Legacy JSON structure from the question bank
+interface RawQuestionLegacy {
     Question: string;
     'Possible answers': string;
     'Correct answer & Explanation': string;
+}
+
+// Normalized question structure for newer datasets
+interface RawQuestionNormalized {
+    question: string;
+    options: string[];
+    answer: string[] | string;
+    explanation: string;
+    questionImages?: string[];
+    optionImages?: Array<string | null>;
 }
 
 const parseOptions = (possibleAnswers: string): string[] => {
@@ -39,6 +49,15 @@ const parseCorrectAnswerAndExplanation = (
     return { answer, explanation };
 };
 
+const normalizeAnswer = (answer: string[] | string): string[] => {
+    if (Array.isArray(answer)) {
+        return answer.map(item => item.trim()).filter(Boolean);
+    }
+
+    const trimmed = answer.trim();
+    return trimmed ? [trimmed] : [];
+};
+
 export const parseJSON = (
     jsonContent: string,
     bankKey?: string
@@ -48,16 +67,81 @@ export const parseJSON = (
     const idPrefix = bankKey ? `${bankKey}-` : '';
 
     try {
-        const rawQuestions: RawQuestion[] = JSON.parse(jsonContent);
+        const rawQuestions: Array<RawQuestionLegacy | RawQuestionNormalized> =
+            JSON.parse(jsonContent);
         for (let i = 0; i < rawQuestions.length; i++) {
             const rawQuestion = rawQuestions[i];
 
             try {
-                // Validate required fields
+                if ('Question' in rawQuestion) {
+                    // Validate required fields
+                    if (
+                        !rawQuestion.Question ||
+                        !rawQuestion['Possible answers'] ||
+                        !rawQuestion['Correct answer & Explanation']
+                    ) {
+                        console.warn(
+                            `Skipping question ${i}: Missing required fields`
+                        );
+                        continue;
+                    }
+
+                    // Parse options from possible answers
+                    const options = parseOptions(
+                        rawQuestion['Possible answers']
+                    );
+                    if (options.length < 2) {
+                        console.warn(
+                            `Skipping question ${i}: Could not parse enough options`,
+                            {
+                                possibleAnswers: rawQuestion[
+                                    'Possible answers'
+                                ].substring(0, 100),
+                            }
+                        );
+                        continue;
+                    }
+
+                    // Parse correct answer and explanation
+                    const { answer, explanation } =
+                        parseCorrectAnswerAndExplanation(
+                            rawQuestion['Correct answer & Explanation']
+                        );
+                    if (!answer) {
+                        console.warn(
+                            `Skipping question ${i}: Could not find correct answer`,
+                            {
+                                content: rawQuestion[
+                                    'Correct answer & Explanation'
+                                ].substring(0, 100),
+                            }
+                        );
+                        continue;
+                    }
+
+                    const question: Question = {
+                        id: `${idPrefix}q-${i + 1}`,
+                        question: rawQuestion.Question.trim(),
+                        options: options,
+                        answer: normalizeAnswer(answer),
+                        explanation: explanation,
+                    };
+
+                    questions.push(question);
+                    continue;
+                }
+
+                const hasPrompt =
+                    rawQuestion.question?.trim() ||
+                    (rawQuestion.questionImages &&
+                        rawQuestion.questionImages.length > 0);
+
                 if (
-                    !rawQuestion.Question ||
-                    !rawQuestion['Possible answers'] ||
-                    !rawQuestion['Correct answer & Explanation']
+                    !hasPrompt ||
+                    !rawQuestion.options ||
+                    !rawQuestion.answer ||
+                    !Array.isArray(rawQuestion.options) ||
+                    rawQuestion.options.length < 2
                 ) {
                     console.warn(
                         `Skipping question ${i}: Missing required fields`
@@ -65,43 +149,22 @@ export const parseJSON = (
                     continue;
                 }
 
-                // Parse options from possible answers
-                const options = parseOptions(rawQuestion['Possible answers']);
-                if (options.length < 2) {
+                const normalizedAnswer = normalizeAnswer(rawQuestion.answer);
+                if (normalizedAnswer.length === 0) {
                     console.warn(
-                        `Skipping question ${i}: Could not parse enough options`,
-                        {
-                            possibleAnswers: rawQuestion[
-                                'Possible answers'
-                            ].substring(0, 100),
-                        }
-                    );
-                    continue;
-                }
-
-                // Parse correct answer and explanation
-                const { answer, explanation } =
-                    parseCorrectAnswerAndExplanation(
-                        rawQuestion['Correct answer & Explanation']
-                    );
-                if (!answer) {
-                    console.warn(
-                        `Skipping question ${i}: Could not find correct answer`,
-                        {
-                            content: rawQuestion[
-                                'Correct answer & Explanation'
-                            ].substring(0, 100),
-                        }
+                        `Skipping question ${i}: Missing correct answer`
                     );
                     continue;
                 }
 
                 const question: Question = {
                     id: `${idPrefix}q-${i + 1}`,
-                    question: rawQuestion.Question.trim(),
-                    options: options,
-                    answer: answer,
-                    explanation: explanation,
+                    question: rawQuestion.question?.trim() || '',
+                    options: rawQuestion.options,
+                    answer: normalizedAnswer,
+                    explanation: rawQuestion.explanation || '',
+                    questionImages: rawQuestion.questionImages,
+                    optionImages: rawQuestion.optionImages,
                 };
 
                 questions.push(question);

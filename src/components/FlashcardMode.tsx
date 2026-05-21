@@ -1,4 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import {
+    Box,
+    Stack,
+    Typography,
+    IconButton,
+    Button,
+    LinearProgress,
+    Card,
+    CardContent,
+    Divider,
+    Chip,
+} from '@mui/material';
 import { Question, QuestionPerformance } from '../types';
 import {
     CheckCircle,
@@ -129,139 +141,218 @@ export const FlashcardMode: React.FC<FlashcardModeProps> = ({
 
     if (!currentQuestion) {
         return (
-            <div className="flashcard-container">
-                <div className="completion-message">
-                    <CheckCircle
-                        size={48}
-                        style={{ color: 'var(--success-color)' }}
-                    />
-                    <h2>Great job! You've completed all flashcards!</h2>
-                    <button
-                        onClick={() => window.location.reload()}
-                        className="btn btn-primary"
-                    >
-                        <RotateCcw size={16} />
-                        Start Over
-                    </button>
-                </div>
-            </div>
+            <Box sx={{ maxWidth: 720, mx: 'auto', px: 2 }}>
+                <Card>
+                    <CardContent>
+                        <Stack spacing={2} sx={{ alignItems: 'center' }}>
+                            <CheckCircle size={48} />
+                            <Typography
+                                variant="h5"
+                                sx={{ textAlign: 'center' }}
+                            >
+                                Great job! You've completed all flashcards!
+                            </Typography>
+                            <Button
+                                variant="contained"
+                                onClick={() => window.location.reload()}
+                                startIcon={<RotateCcw size={16} />}
+                            >
+                                Start Over
+                            </Button>
+                        </Stack>
+                    </CardContent>
+                </Card>
+            </Box>
         );
     }
 
     return (
-        <div className="flashcard-container">
-            <div className="mode-nav-bar navigation-controls">
-                <button
-                    onClick={handlePrevious}
-                    disabled={currentIndex === 0}
-                    className="nav-arrow"
-                    aria-label="Previous question"
-                >
-                    <ChevronLeft size={24} />
-                </button>
-                <span className="question-counter">
-                    Question {currentIndex + 1} of {questions.length}
-                </span>
-                <button
-                    onClick={handleNext}
-                    disabled={currentIndex === questions.length - 1}
-                    className="nav-arrow"
-                    aria-label="Next question"
-                >
-                    <ChevronRight size={24} />
-                </button>
-            </div>
-            <div className="progress-bar">
-                <div
-                    className="progress-fill"
-                    style={{
-                        width: `${((currentIndex + 1) / questions.length) * 100}%`,
+        <Box sx={{ maxWidth: 720, mx: 'auto', px: 2 }}>
+            <Stack spacing={2}>
+                <Stack
+                    direction="row"
+                    sx={{
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
                     }}
+                >
+                    <IconButton
+                        onClick={handlePrevious}
+                        disabled={currentIndex === 0}
+                        aria-label="Previous question"
+                    >
+                        <ChevronLeft size={24} />
+                    </IconButton>
+                    <Typography variant="body2" color="text.secondary">
+                        Question {currentIndex + 1} of {questions.length}
+                    </Typography>
+                    <IconButton
+                        onClick={handleNext}
+                        disabled={currentIndex === questions.length - 1}
+                        aria-label="Next question"
+                    >
+                        <ChevronRight size={24} />
+                    </IconButton>
+                </Stack>
+                <LinearProgress
+                    variant="determinate"
+                    value={((currentIndex + 1) / questions.length) * 100}
+                    sx={{ height: 6, borderRadius: 999 }}
                 />
-            </div>
-
-            <div className="flashcard">
-                <div className="flashcard-front">
-                    <div className="question-header-card">
-                        <h3>
-                            <HelpCircle size={18} />
-                            Question
-                        </h3>
-                        {currentPerformance && (
-                            <div className="question-performance">
-                                <span className="correct-count">
-                                    <CheckCircle size={14} />
-                                    {currentPerformance.correctCount}
-                                </span>
-                                <span className="incorrect-count">
-                                    <XCircle size={14} />
-                                    {currentPerformance.incorrectCount}
-                                </span>
-                            </div>
-                        )}
-                    </div>
-                    <p className="question-text">
-                        {formatText(currentQuestion.question)}
-                    </p>
-                </div>
-
-                {showAnswer && (
-                    <div className="flashcard-back">
-                        <h3>
-                            <CheckCircle size={18} />
-                            Answer
-                        </h3>
-                        <p className="answer-text">
-                            <strong>
-                                Correct Answer:{' '}
-                                {formatText(currentQuestion.answer)}
-                            </strong>
-                        </p>
-                        {hasExplanation(currentQuestion.explanation) && (
-                            <div className="explanation">
-                                <p>{formatText(currentQuestion.explanation)}</p>
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                <div className="mode-action-bar flashcard-controls">
-                    {!showAnswer ? (
-                        <button
-                            onClick={handleRevealAnswer}
-                            className="btn btn-primary"
-                        >
-                            <Eye size={16} />
-                            Show Answer
-                        </button>
-                    ) : !hasAnswered ? (
-                        <div className="answer-buttons">
-                            <button
-                                onClick={() => handleAnswerResponse(false)}
-                                className="btn btn-danger"
+                <Card>
+                    <CardContent>
+                        <Stack spacing={2}>
+                            <Stack
+                                direction="row"
+                                sx={{
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                }}
                             >
-                                <XCircle size={16} />
-                                Incorrect
-                            </button>
-                            <button
-                                onClick={() => handleAnswerResponse(true)}
-                                className="btn btn-success"
-                            >
-                                <CheckCircle size={16} />
-                                Correct
-                            </button>
-                        </div>
-                    ) : (
-                        <button
-                            onClick={handleNext}
-                            className="btn btn-primary"
-                        >
-                            <ArrowRight size={16} />
-                            Next Question
-                        </button>
-                    )}
-                </div>
-            </div>
-        </div>
+                                <Stack direction="row" spacing={1}>
+                                    <HelpCircle size={18} />
+                                    <Typography variant="subtitle1">
+                                        Question
+                                    </Typography>
+                                </Stack>
+                                {currentPerformance && (
+                                    <Stack direction="row" spacing={1}>
+                                        <Chip
+                                            size="small"
+                                            icon={<CheckCircle size={14} />}
+                                            label={
+                                                currentPerformance.correctCount
+                                            }
+                                            color="success"
+                                            variant="outlined"
+                                        />
+                                        <Chip
+                                            size="small"
+                                            icon={<XCircle size={14} />}
+                                            label={
+                                                currentPerformance.incorrectCount
+                                            }
+                                            color="error"
+                                            variant="outlined"
+                                        />
+                                    </Stack>
+                                )}
+                            </Stack>
+                            {currentQuestion.questionImages?.length ? (
+                                <Stack
+                                    direction="row"
+                                    spacing={1}
+                                    sx={{ flexWrap: 'wrap' }}
+                                >
+                                    {currentQuestion.questionImages.map(
+                                        (image, index) => (
+                                            <Box
+                                                key={`${currentQuestion.id}-qimg-${index}`}
+                                                component="img"
+                                                src={image}
+                                                alt=""
+                                                sx={{
+                                                    maxWidth: '100%',
+                                                    borderRadius: 1,
+                                                    border: '1px solid',
+                                                    borderColor: 'divider',
+                                                }}
+                                            />
+                                        )
+                                    )}
+                                </Stack>
+                            ) : null}
+                            <Typography variant="body1">
+                                {formatText(currentQuestion.question)}
+                            </Typography>
+                            {showAnswer && (
+                                <>
+                                    <Divider />
+                                    <Stack spacing={1}>
+                                        <Stack direction="row" spacing={1}>
+                                            <CheckCircle size={18} />
+                                            <Typography variant="subtitle1">
+                                                Answer
+                                            </Typography>
+                                        </Stack>
+                                        <Typography variant="body1">
+                                            <strong>
+                                                Correct Answer:{' '}
+                                                {formatText(
+                                                    currentQuestion.answer.join(
+                                                        ', '
+                                                    )
+                                                )}
+                                            </strong>
+                                        </Typography>
+                                        {hasExplanation(
+                                            currentQuestion.explanation
+                                        ) && (
+                                            <Box
+                                                sx={{
+                                                    bgcolor: 'primary.light',
+                                                    p: 2,
+                                                    borderRadius: 2,
+                                                }}
+                                            >
+                                                <Typography variant="body2">
+                                                    {formatText(
+                                                        currentQuestion.explanation
+                                                    )}
+                                                </Typography>
+                                            </Box>
+                                        )}
+                                    </Stack>
+                                </>
+                            )}
+                            <Box>
+                                {!showAnswer ? (
+                                    <Button
+                                        variant="contained"
+                                        onClick={handleRevealAnswer}
+                                        startIcon={<Eye size={16} />}
+                                    >
+                                        Show Answer
+                                    </Button>
+                                ) : !hasAnswered ? (
+                                    <Stack direction="row" spacing={2}>
+                                        <Button
+                                            variant="contained"
+                                            color="error"
+                                            onClick={() =>
+                                                handleAnswerResponse(false)
+                                            }
+                                            startIcon={<XCircle size={16} />}
+                                        >
+                                            Incorrect
+                                        </Button>
+                                        <Button
+                                            variant="contained"
+                                            color="success"
+                                            onClick={() =>
+                                                handleAnswerResponse(true)
+                                            }
+                                            startIcon={
+                                                <CheckCircle size={16} />
+                                            }
+                                        >
+                                            Correct
+                                        </Button>
+                                    </Stack>
+                                ) : (
+                                    <Button
+                                        variant="contained"
+                                        onClick={handleNext}
+                                        startIcon={<ArrowRight size={16} />}
+                                    >
+                                        Next Question
+                                    </Button>
+                                )}
+                            </Box>
+                        </Stack>
+                    </CardContent>
+                </Card>
+            </Stack>
+        </Box>
     );
 };

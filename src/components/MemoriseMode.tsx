@@ -1,13 +1,27 @@
 import React, { useState, useEffect } from 'react';
+import {
+    Box,
+    Stack,
+    Typography,
+    TextField,
+    InputAdornment,
+    FormControlLabel,
+    Switch,
+    Select,
+    MenuItem,
+    Card,
+    CardContent,
+    Divider,
+    Chip,
+    Button,
+} from '@mui/material';
 import { Question, QuestionPerformance } from '../types';
 import {
     TrendingUp,
     TrendingDown,
     Eye,
-    EyeOff,
     Search,
     Filter,
-    BookOpen,
     HelpCircle,
     CheckCircle,
     XCircle,
@@ -33,9 +47,19 @@ export const MemoriseMode: React.FC<MemoriseModeProps> = ({
 }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [showAnswers, setShowAnswers] = useState(true);
+    const [revealedAnswers, setRevealedAnswers] = useState<Set<string>>(
+        () => new Set()
+    );
     const [sortBy, setSortBy] = useState<'index' | 'performance' | 'accuracy'>(
         'index'
     );
+
+    const toggleShowAnswers = (nextValue: boolean) => {
+        setShowAnswers(nextValue);
+        if (!nextValue) {
+            setRevealedAnswers(new Set());
+        }
+    };
 
     // Add keyboard event listeners
     useEffect(() => {
@@ -52,7 +76,7 @@ export const MemoriseMode: React.FC<MemoriseModeProps> = ({
                 case 'h':
                 case 'H':
                     event.preventDefault();
-                    setShowAnswers(!showAnswers);
+                    toggleShowAnswers(!showAnswers);
                     break;
                 case '/':
                     event.preventDefault();
@@ -83,7 +107,7 @@ export const MemoriseMode: React.FC<MemoriseModeProps> = ({
             formatText(q.question)
                 .toLowerCase()
                 .includes(searchTerm.toLowerCase()) ||
-            formatText(q.answer)
+            formatText(q.answer.join(', '))
                 .toLowerCase()
                 .includes(searchTerm.toLowerCase()) ||
             formatText(q.explanation)
@@ -134,225 +158,453 @@ export const MemoriseMode: React.FC<MemoriseModeProps> = ({
     };
 
     return (
-        <div className="memorise-container">
-            <div className="memorise-header">
-                <h2>
-                    <BookOpen size={24} />
-                    Memorise Mode
-                </h2>
-                <p>Review all questions and answers to reinforce learning</p>
-            </div>
-
-            <div className="memorise-controls">
-                <div className="search-container">
-                    <Search size={18} />
-                    <input
-                        type="text"
+        <Box sx={{ maxWidth: 900, mx: 'auto', px: 2, py: 3 }}>
+            <Stack spacing={3}>
+                <Stack
+                    direction={{ xs: 'column', md: 'row' }}
+                    spacing={2}
+                    sx={{ alignItems: { xs: 'stretch', md: 'center' } }}
+                >
+                    <TextField
+                        fullWidth
                         placeholder="Search questions, answers, or explanations... (Press / to focus)"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
-                        className="search-input"
+                        slotProps={{
+                            input: {
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <Search size={18} />
+                                    </InputAdornment>
+                                ),
+                            },
+                        }}
                     />
-                </div>
-
-                <div className="view-controls">
-                    <button
-                        onClick={() => setShowAnswers(!showAnswers)}
-                        className="btn btn-secondary"
-                        title="Toggle answers (H)"
+                    <Stack
+                        direction="row"
+                        spacing={2}
+                        sx={{
+                            alignItems: 'center',
+                        }}
                     >
-                        {showAnswers ? <EyeOff size={16} /> : <Eye size={16} />}
-                        {showAnswers ? 'Hide' : 'Show'} Answers
-                    </button>
-
-                    <div className="sort-container">
-                        <Filter size={16} />
-                        <select
-                            value={sortBy}
-                            onChange={e =>
-                                setSortBy(
-                                    e.target.value as
-                                        | 'index'
-                                        | 'performance'
-                                        | 'accuracy'
-                                )
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={!showAnswers}
+                                    onChange={event =>
+                                        toggleShowAnswers(!event.target.checked)
+                                    }
+                                />
                             }
-                            className="sort-select"
+                            label="Hide Answers"
+                        />
+                        <Stack
+                            direction="row"
+                            spacing={1}
+                            sx={{
+                                alignItems: 'center',
+                            }}
                         >
-                            <option value="index">Original Order</option>
-                            <option value="performance">Most Attempted</option>
-                            <option value="accuracy">Highest Accuracy</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+                            <Filter size={16} />
+                            <Select
+                                value={sortBy}
+                                onChange={e =>
+                                    setSortBy(
+                                        e.target.value as
+                                            | 'index'
+                                            | 'performance'
+                                            | 'accuracy'
+                                    )
+                                }
+                                size="small"
+                            >
+                                <MenuItem value="index">
+                                    Original Order
+                                </MenuItem>
+                                <MenuItem value="performance">
+                                    Most Attempted
+                                </MenuItem>
+                                <MenuItem value="accuracy">
+                                    Highest Accuracy
+                                </MenuItem>
+                            </Select>
+                        </Stack>
+                    </Stack>
+                </Stack>
 
-            <div className="questions-list">
-                <div
-                    className="navigation-controls"
-                    style={{ marginBottom: '1rem' }}
-                >
-                    <span className="question-counter">
-                        Showing {sortedQuestions.length} of {questions.length}{' '}
-                        questions
-                    </span>
-                </div>
-                {sortedQuestions.map((question, index) => {
-                    const perf = performance.get(question.id);
-                    const accuracy = getAccuracy(perf);
-                    const performanceClass = getPerformanceColor(perf);
+                <Typography variant="body2" color="text.secondary">
+                    Showing {sortedQuestions.length} of {questions.length}{' '}
+                    questions
+                </Typography>
 
-                    return (
-                        <div key={question.id} className="memorise-card">
-                            <div className="card-header">
-                                <div className="question-number">
-                                    <HelpCircle size={16} />
-                                    Question {questions.indexOf(question) + 1}
-                                </div>
-                                <div
-                                    className={`performance-badge ${performanceClass}`}
-                                >
-                                    {perf ? (
-                                        <div className="performance-stats">
-                                            <BarChart3 size={14} />
-                                            <span className="accuracy">
-                                                {accuracy.toFixed(0)}%
-                                            </span>
-                                            <span className="attempts">
-                                                {perf.correctCount +
-                                                    perf.incorrectCount}{' '}
-                                                attempts
-                                            </span>
-                                        </div>
-                                    ) : (
-                                        <span className="not-attempted">
-                                            <XCircle size={14} />
-                                            Not attempted
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
+                <Stack spacing={2}>
+                    {sortedQuestions.map(question => {
+                        const perf = performance.get(question.id);
+                        const accuracy = getAccuracy(perf);
+                        const performanceClass = getPerformanceColor(perf);
+                        const badgeColor:
+                            | 'default'
+                            | 'success'
+                            | 'warning'
+                            | 'error' =
+                            performanceClass === 'performance-excellent'
+                                ? 'success'
+                                : performanceClass === 'performance-good'
+                                  ? 'success'
+                                  : performanceClass === 'performance-fair'
+                                    ? 'warning'
+                                    : performanceClass === 'performance-poor'
+                                      ? 'error'
+                                      : 'default';
 
-                            <div className="card-content">
-                                <div className="question-section">
-                                    <h3>
-                                        <HelpCircle size={18} />
-                                        Question
-                                    </h3>
-                                    <p className="question-text">
-                                        {formatText(question.question)}
-                                    </p>
-                                </div>
-
-                                <div className="options-section">
-                                    <h4>
-                                        <ListChecks size={16} />
-                                        Options
-                                    </h4>
-                                    <div className="options-list">
-                                        {question.options.map(
-                                            (option, optionIndex) => (
-                                                <div
-                                                    key={optionIndex}
-                                                    className="option-item"
-                                                >
-                                                    <span className="option-letter">
-                                                        {String.fromCharCode(
-                                                            65 + optionIndex
-                                                        )}
-                                                    </span>
-                                                    <span className="option-text">
-                                                        {formatText(option)}
-                                                    </span>
-                                                </div>
-                                            )
-                                        )}
-                                    </div>
-                                </div>
-
-                                {showAnswers && (
-                                    <div className="answer-section">
-                                        <h4>
-                                            <CheckCircle size={16} />
-                                            Answer & Explanation
-                                        </h4>
-                                        <p className="answer-text">
-                                            <strong>
-                                                Correct Answer:{' '}
-                                                {formatText(question.answer)}
-                                            </strong>
-                                        </p>
-                                        {hasExplanation(
-                                            question.explanation
-                                        ) && (
-                                            <div className="explanation">
-                                                <p>
-                                                    {formatText(
-                                                        question.explanation
-                                                    )}
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="card-footer">
-                                <div className="performance-details">
-                                    {perf && (
-                                        <div className="performance-breakdown">
-                                            <div className="correct-stat">
-                                                <TrendingUp
-                                                    size={16}
-                                                    className="icon-correct"
+                        return (
+                            <Card key={question.id}>
+                                <CardContent>
+                                    <Stack spacing={2}>
+                                        <Stack
+                                            direction="row"
+                                            sx={{
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center',
+                                                flexWrap: 'wrap',
+                                                gap: 1,
+                                            }}
+                                        >
+                                            <Stack
+                                                direction="row"
+                                                spacing={1}
+                                                sx={{
+                                                    alignItems: 'center',
+                                                }}
+                                            >
+                                                <HelpCircle size={16} />
+                                                <Typography variant="subtitle2">
+                                                    Question{' '}
+                                                    {questions.indexOf(
+                                                        question
+                                                    ) + 1}
+                                                </Typography>
+                                            </Stack>
+                                            {perf ? (
+                                                <Chip
+                                                    icon={
+                                                        <BarChart3 size={14} />
+                                                    }
+                                                    label={`${accuracy.toFixed(
+                                                        0
+                                                    )}% · ${
+                                                        perf.correctCount +
+                                                        perf.incorrectCount
+                                                    } attempts`}
+                                                    color={badgeColor}
+                                                    variant="outlined"
                                                 />
-                                                <span>
-                                                    Correct: {perf.correctCount}
-                                                </span>
-                                            </div>
-                                            <div className="incorrect-stat">
-                                                <TrendingDown
-                                                    size={16}
-                                                    className="icon-incorrect"
+                                            ) : (
+                                                <Chip
+                                                    icon={<XCircle size={14} />}
+                                                    label="Not attempted"
+                                                    variant="outlined"
                                                 />
-                                                <span>
-                                                    Incorrect:{' '}
-                                                    {perf.incorrectCount}
-                                                </span>
-                                            </div>
-                                            {perf.lastAnswered && (
-                                                <div className="last-answered">
-                                                    <Calendar size={14} />
-                                                    Last answered:{' '}
-                                                    {perf.lastAnswered.toLocaleDateString()}
-                                                </div>
                                             )}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
+                                        </Stack>
+                                        <Stack spacing={1}>
+                                            <Stack
+                                                direction="row"
+                                                spacing={1}
+                                                sx={{
+                                                    alignItems: 'center',
+                                                }}
+                                            >
+                                                <HelpCircle size={18} />
+                                                <Typography variant="subtitle1">
+                                                    Question
+                                                </Typography>
+                                            </Stack>
+                                            {question.questionImages?.length ? (
+                                                <Stack
+                                                    direction="row"
+                                                    spacing={1}
+                                                    sx={{ flexWrap: 'wrap' }}
+                                                >
+                                                    {question.questionImages.map(
+                                                        (image, index) => (
+                                                            <Box
+                                                                key={`${question.id}-qimg-${index}`}
+                                                                component="img"
+                                                                src={image}
+                                                                alt=""
+                                                                sx={{
+                                                                    maxWidth:
+                                                                        '100%',
+                                                                    borderRadius: 1,
+                                                                    border: '1px solid',
+                                                                    borderColor:
+                                                                        'divider',
+                                                                }}
+                                                            />
+                                                        )
+                                                    )}
+                                                </Stack>
+                                            ) : null}
+                                            <Typography variant="body1">
+                                                {formatText(question.question)}
+                                            </Typography>
+                                        </Stack>
+                                        <Stack spacing={1}>
+                                            <Stack
+                                                direction="row"
+                                                spacing={1}
+                                                sx={{
+                                                    alignItems: 'center',
+                                                }}
+                                            >
+                                                <ListChecks size={16} />
+                                                <Typography variant="subtitle2">
+                                                    Options
+                                                </Typography>
+                                            </Stack>
+                                            <Stack spacing={1}>
+                                                {question.options.map(
+                                                    (option, optionIndex) => (
+                                                        <Stack
+                                                            key={optionIndex}
+                                                            direction="row"
+                                                            spacing={1}
+                                                            sx={{
+                                                                alignItems:
+                                                                    'flex-start',
+                                                            }}
+                                                        >
+                                                            <Chip
+                                                                label={String.fromCharCode(
+                                                                    65 +
+                                                                        optionIndex
+                                                                )}
+                                                                size="small"
+                                                                variant="outlined"
+                                                            />
+                                                            <Box>
+                                                                <Typography variant="body2">
+                                                                    {formatText(
+                                                                        option
+                                                                    )}
+                                                                </Typography>
+                                                                {question
+                                                                    .optionImages?.[
+                                                                    optionIndex
+                                                                ] ? (
+                                                                    <Box
+                                                                        component="img"
+                                                                        src={
+                                                                            question
+                                                                                .optionImages[
+                                                                                optionIndex
+                                                                            ] ||
+                                                                            ''
+                                                                        }
+                                                                        alt=""
+                                                                        sx={{
+                                                                            maxWidth:
+                                                                                '100%',
+                                                                            mt: 1,
+                                                                            borderRadius: 1,
+                                                                            border: '1px solid',
+                                                                            borderColor:
+                                                                                'divider',
+                                                                        }}
+                                                                    />
+                                                                ) : null}
+                                                            </Box>
+                                                        </Stack>
+                                                    )
+                                                )}
+                                            </Stack>
+                                        </Stack>
+                                        {!showAnswers &&
+                                            !revealedAnswers.has(
+                                                question.id
+                                            ) && (
+                                                <Button
+                                                    variant="outlined"
+                                                    onClick={() =>
+                                                        setRevealedAnswers(
+                                                            prevAnswers =>
+                                                                new Set(
+                                                                    prevAnswers
+                                                                ).add(
+                                                                    question.id
+                                                                )
+                                                        )
+                                                    }
+                                                >
+                                                    Show answer
+                                                </Button>
+                                            )}
+                                        {(showAnswers ||
+                                            revealedAnswers.has(
+                                                question.id
+                                            )) && (
+                                            <Box>
+                                                <Divider sx={{ mb: 2 }} />
+                                                <Stack spacing={1}>
+                                                    <Stack
+                                                        direction="row"
+                                                        spacing={1}
+                                                        sx={{
+                                                            alignItems:
+                                                                'center',
+                                                        }}
+                                                    >
+                                                        <CheckCircle
+                                                            size={16}
+                                                        />
+                                                        <Typography variant="subtitle1">
+                                                            Answer & Explanation
+                                                        </Typography>
+                                                    </Stack>
+                                                    <Typography variant="body1">
+                                                        <strong>
+                                                            Correct Answer:{' '}
+                                                            {formatText(
+                                                                question.answer.join(
+                                                                    ', '
+                                                                )
+                                                            )}
+                                                        </strong>
+                                                    </Typography>
+                                                    {hasExplanation(
+                                                        question.explanation
+                                                    ) && (
+                                                        <Box
+                                                            sx={{
+                                                                bgcolor:
+                                                                    'primary.light',
+                                                                p: 2,
+                                                                borderRadius: 2,
+                                                            }}
+                                                        >
+                                                            <Typography variant="body2">
+                                                                {formatText(
+                                                                    question.explanation
+                                                                )}
+                                                            </Typography>
+                                                        </Box>
+                                                    )}
+                                                </Stack>
+                                            </Box>
+                                        )}
+                                        {perf && (
+                                            <Stack
+                                                direction={{
+                                                    xs: 'column',
+                                                    md: 'row',
+                                                }}
+                                                spacing={2}
+                                                sx={{
+                                                    alignItems: 'center',
+                                                }}
+                                            >
+                                                <Stack
+                                                    direction="row"
+                                                    spacing={1}
+                                                    sx={{
+                                                        alignItems: 'center',
+                                                    }}
+                                                >
+                                                    <TrendingUp size={16} />
+                                                    <Typography variant="body2">
+                                                        Correct:{' '}
+                                                        {perf.correctCount}
+                                                    </Typography>
+                                                </Stack>
+                                                <Stack
+                                                    direction="row"
+                                                    spacing={1}
+                                                    sx={{
+                                                        alignItems: 'center',
+                                                    }}
+                                                >
+                                                    <TrendingDown size={16} />
+                                                    <Typography variant="body2">
+                                                        Incorrect:{' '}
+                                                        {perf.incorrectCount}
+                                                    </Typography>
+                                                </Stack>
+                                                {perf.lastAnswered && (
+                                                    <Stack
+                                                        direction="row"
+                                                        spacing={1}
+                                                        sx={{
+                                                            alignItems:
+                                                                'center',
+                                                        }}
+                                                    >
+                                                        <Calendar size={14} />
+                                                        <Typography variant="body2">
+                                                            Last answered:{' '}
+                                                            {perf.lastAnswered.toLocaleDateString()}
+                                                        </Typography>
+                                                    </Stack>
+                                                )}
+                                            </Stack>
+                                        )}
+                                    </Stack>
+                                </CardContent>
+                            </Card>
+                        );
+                    })}
+                </Stack>
 
-            {sortedQuestions.length === 0 && (
-                <div className="no-results">
-                    <Search size={48} style={{ opacity: 0.5 }} />
-                    <p>No questions found matching your search.</p>
-                </div>
-            )}
+                {sortedQuestions.length === 0 && (
+                    <Card>
+                        <CardContent>
+                            <Stack
+                                spacing={1}
+                                sx={{
+                                    alignItems: 'center',
+                                    textAlign: 'center',
+                                }}
+                            >
+                                <Search size={48} />
+                                <Typography variant="body1">
+                                    No questions found matching your search.
+                                </Typography>
+                            </Stack>
+                        </CardContent>
+                    </Card>
+                )}
 
-            <div className="memorise-footer">
-                <p>
-                    <BarChart3 size={16} />
-                    Total Questions: {questions.length}
-                </p>
-                <p>
-                    <Eye size={16} />
-                    Showing: {sortedQuestions.length}
-                </p>
-            </div>
-        </div>
+                <Stack
+                    direction={{ xs: 'column', md: 'row' }}
+                    spacing={2}
+                    sx={{ justifyContent: 'center', alignItems: 'center' }}
+                >
+                    <Stack
+                        direction="row"
+                        spacing={1}
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
+                        <BarChart3 size={16} />
+                        <Typography variant="body2" color="text.secondary">
+                            Total Questions: {questions.length}
+                        </Typography>
+                    </Stack>
+                    <Stack
+                        direction="row"
+                        spacing={1}
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
+                        <Eye size={16} />
+                        <Typography variant="body2" color="text.secondary">
+                            Showing: {sortedQuestions.length}
+                        </Typography>
+                    </Stack>
+                </Stack>
+            </Stack>
+        </Box>
     );
 };
