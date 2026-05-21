@@ -317,9 +317,16 @@ const getQuestionIdFromURL = (): string | null => {
 const setSessionInURL = (
     mode: StudyMode | null,
     index: number | null,
-    questionId: string | null
+    questionId: string | null,
+    bank: QuestionBank | null
 ) => {
     const url = new URL(window.location.href);
+    if (bank) {
+        url.pathname = getBankPath(bank);
+    } else {
+        const basePath = getBasePath();
+        url.pathname = basePath || '/';
+    }
     if (mode) {
         url.searchParams.set('mode', mode);
     } else {
@@ -610,8 +617,19 @@ function App() {
         if (!hasInitializedMode) return;
         const currentQuestionId = currentQuestions[currentIndex]?.id ?? null;
         const indexValue = currentMode ? currentIndex : null;
-        setSessionInURL(currentMode, indexValue, currentQuestionId);
-    }, [currentMode, currentIndex, currentQuestions, hasInitializedMode]);
+        setSessionInURL(
+            currentMode,
+            indexValue,
+            currentQuestionId,
+            selectedBank
+        );
+    }, [
+        currentMode,
+        currentIndex,
+        currentQuestions,
+        hasInitializedMode,
+        selectedBank,
+    ]);
 
     const handleAnswer = (isCorrect: boolean) => {
         const currentQuestion = currentQuestions[currentIndex];
