@@ -23,6 +23,7 @@ import {
     HelpCircle,
 } from 'lucide-react';
 import { formatText } from '../utils/textFormatting';
+import { resolveAssetPath } from '../utils/url';
 
 // Helper function to check if explanation has meaningful content
 const hasExplanation = (explanation: string): boolean => {
@@ -249,7 +250,7 @@ export const FlashcardMode: React.FC<FlashcardModeProps> = ({
                                             <Box
                                                 key={`${currentQuestion.id}-qimg-${index}`}
                                                 component="img"
-                                                src={image}
+                                                src={resolveAssetPath(image)}
                                                 alt=""
                                                 sx={{
                                                     maxWidth: '100%',

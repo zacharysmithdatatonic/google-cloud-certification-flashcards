@@ -36,6 +36,7 @@ import {
     savePerformanceToStorage,
     loadPerformanceFromStorage,
 } from './utils/performance';
+import { getBasePath } from './utils/url';
 import { FlashcardMode } from './components/FlashcardMode';
 import { QuizMode } from './components/QuizMode';
 import { ReviewMode } from './components/ReviewMode';
@@ -231,34 +232,6 @@ const toSlug = (value: string) =>
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
-
-const getBasePath = () => {
-    const publicUrl = process.env.PUBLIC_URL || '';
-    if (publicUrl && publicUrl !== '.') {
-        const basePath = new URL(publicUrl, window.location.origin).pathname;
-        const normalized = basePath.endsWith('/')
-            ? basePath.slice(0, -1)
-            : basePath;
-        if (normalized && normalized !== '/') {
-            return normalized;
-        }
-    }
-
-    const parts = window.location.pathname.split('/').filter(Boolean);
-    const tierIndex = parts.findIndex(part =>
-        ['foundational', 'associate', 'professional'].includes(part)
-    );
-    if (tierIndex > 0) {
-        return `/${parts.slice(0, tierIndex).join('/')}`;
-    }
-    if (tierIndex === 0) {
-        return '';
-    }
-    if (parts.length === 1) {
-        return `/${parts[0]}`;
-    }
-    return '';
-};
 
 const getBankPath = (bank: QuestionBank) => {
     const basePath = getBasePath();

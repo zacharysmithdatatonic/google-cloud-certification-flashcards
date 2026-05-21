@@ -28,9 +28,10 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ConfirmModal } from './ConfirmModal';
+import { getAssetUrl } from '../utils/url';
 
 // Audio URLs
-const NOTIFICATION_SOUND = `${process.env.PUBLIC_URL}/sounds/notification.mp3`;
+const NOTIFICATION_SOUND = getAssetUrl('/sounds/notification.mp3');
 
 // Motivational messages for different states
 const BREAK_START_MESSAGES = [

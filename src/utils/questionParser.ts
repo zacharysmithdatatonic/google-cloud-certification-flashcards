@@ -1,4 +1,5 @@
 import { Question } from '../types';
+import { getAssetUrl } from './url';
 
 // Legacy JSON structure from the question bank
 interface RawQuestionLegacy {
@@ -190,10 +191,8 @@ export const loadQuestionsFromJSON = async (
     bankKey?: string
 ): Promise<Question[]> => {
     try {
-        // Use PUBLIC_URL environment variable to get the correct base path
-        const baseUrl = process.env.PUBLIC_URL || '';
         const path = datasetPath || '/pmle.json';
-        const response = await fetch(`${baseUrl}${path}`);
+        const response = await fetch(getAssetUrl(path));
         if (!response.ok) {
             throw new Error(
                 `Failed to load dataset: ${response.status} ${response.statusText}`

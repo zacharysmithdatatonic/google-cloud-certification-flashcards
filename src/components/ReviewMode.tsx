@@ -23,6 +23,7 @@ import {
     HelpCircle,
 } from 'lucide-react';
 import { formatText } from '../utils/textFormatting';
+import { resolveAssetPath } from '../utils/url';
 
 // Helper function to check if explanation has meaningful content
 const hasExplanation = (explanation: string): boolean => {
@@ -323,7 +324,7 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
                                             <Box
                                                 key={`${currentQuestion.id}-qimg-${index}`}
                                                 component="img"
-                                                src={image}
+                                                src={resolveAssetPath(image)}
                                                 alt=""
                                                 sx={{
                                                     maxWidth: '100%',
@@ -423,12 +424,12 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
                                                         ] ? (
                                                             <Box
                                                                 component="img"
-                                                                src={
+                                                                src={resolveAssetPath(
                                                                     currentQuestion
                                                                         .optionImages[
                                                                         index
-                                                                    ] || ''
-                                                                }
+                                                                    ]
+                                                                )}
                                                                 alt=""
                                                                 sx={{
                                                                     maxWidth:

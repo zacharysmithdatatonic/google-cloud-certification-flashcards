@@ -6,6 +6,7 @@ import {
     CERTIFICATION_TIERS,
     QUESTION_BANKS,
 } from '../types';
+import { getAssetUrl } from '../utils/url';
 import {
     Lock,
     Sparkles,
@@ -178,7 +179,7 @@ export const CertificationSelector: React.FC<CertificationSelectorProps> = ({
                         >
                             <Box
                                 component="img"
-                                src={`${process.env.PUBLIC_URL}/logo.png`}
+                                src={getAssetUrl('/logo.png')}
                                 alt="Certification Flashcards logo"
                                 sx={{ width: 40, height: 40 }}
                             />

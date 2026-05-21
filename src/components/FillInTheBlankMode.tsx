@@ -26,6 +26,7 @@ import {
     Edit3,
 } from 'lucide-react';
 import { formatText } from '../utils/textFormatting';
+import { resolveAssetPath } from '../utils/url';
 
 // Technical keywords to target for blanks
 const TECHNICAL_KEYWORDS = [
@@ -663,7 +664,7 @@ export const FillInTheBlankMode: React.FC<FillInTheBlankModeProps> = ({
                                             <Box
                                                 key={`${currentQuestion.id}-qimg-${index}`}
                                                 component="img"
-                                                src={image}
+                                                src={resolveAssetPath(image)}
                                                 alt=""
                                                 sx={{
                                                     maxWidth: '100%',

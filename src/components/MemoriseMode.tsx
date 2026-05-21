@@ -30,6 +30,7 @@ import {
     ListChecks,
 } from 'lucide-react';
 import { formatText } from '../utils/textFormatting';
+import { resolveAssetPath } from '../utils/url';
 
 // Helper function to check if explanation has meaningful content
 const hasExplanation = (explanation: string): boolean => {
@@ -331,7 +332,9 @@ export const MemoriseMode: React.FC<MemoriseModeProps> = ({
                                                             <Box
                                                                 key={`${question.id}-qimg-${index}`}
                                                                 component="img"
-                                                                src={image}
+                                                                src={resolveAssetPath(
+                                                                    image
+                                                                )}
                                                                 alt=""
                                                                 sx={{
                                                                     maxWidth:
@@ -395,13 +398,12 @@ export const MemoriseMode: React.FC<MemoriseModeProps> = ({
                                                                 ] ? (
                                                                     <Box
                                                                         component="img"
-                                                                        src={
+                                                                        src={resolveAssetPath(
                                                                             question
                                                                                 .optionImages[
                                                                                 optionIndex
-                                                                            ] ||
-                                                                            ''
-                                                                        }
+                                                                            ]
+                                                                        )}
                                                                         alt=""
                                                                         sx={{
                                                                             maxWidth:
