@@ -232,11 +232,25 @@ const toSlug = (value: string) =>
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
 
-const getBankPath = (bank: QuestionBank) =>
-    `/${bank.tier}/${toSlug(bank.name)}`;
+const getBasePath = () => {
+    const publicUrl = process.env.PUBLIC_URL || '/';
+    const basePath = new URL(publicUrl, window.location.origin).pathname;
+    return basePath.endsWith('/') ? basePath.slice(0, -1) : basePath;
+};
+
+const getBankPath = (bank: QuestionBank) => {
+    const basePath = getBasePath();
+    const prefix = basePath ? `${basePath}/` : '/';
+    return `${prefix}${bank.tier}/${toSlug(bank.name)}`;
+};
 
 const getBankFromPath = (): QuestionBank | null => {
-    const parts = window.location.pathname.split('/').filter(Boolean);
+    const basePath = getBasePath();
+    let path = window.location.pathname;
+    if (basePath && path.startsWith(basePath)) {
+        path = path.slice(basePath.length) || '/';
+    }
+    const parts = path.split('/').filter(Boolean);
     if (parts.length < 2) return null;
     const [tier, slug] = parts;
     if (!['foundational', 'associate', 'professional'].includes(tier)) {
@@ -253,11 +267,12 @@ const getBankFromPath = (): QuestionBank | null => {
 };
 
 const setBankInURL = (bank: QuestionBank | null) => {
+    const basePath = getBasePath();
     const url = new URL(window.location.href);
     if (bank) {
         url.pathname = getBankPath(bank);
     } else {
-        url.pathname = '/';
+        url.pathname = basePath || '/';
     }
     if (url.pathname === window.location.pathname) return;
     window.history.pushState({}, '', url.toString());
