@@ -182,12 +182,40 @@ const getModeFromURL = (): StudyMode | null => {
         : null;
 };
 
-const setModeInURL = (mode: StudyMode | null) => {
+const getIndexFromURL = (): number | null => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const indexParam = urlParams.get('index');
+    if (!indexParam) return null;
+    const parsed = Number.parseInt(indexParam, 10);
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+};
+
+const getQuestionIdFromURL = (): string | null => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const questionId = urlParams.get('questionId');
+    return questionId && questionId.trim().length > 0 ? questionId : null;
+};
+
+const setSessionInURL = (
+    mode: StudyMode | null,
+    index: number | null,
+    questionId: string | null
+) => {
     const url = new URL(window.location.href);
     if (mode) {
         url.searchParams.set('mode', mode);
     } else {
         url.searchParams.delete('mode');
+    }
+    if (mode && index !== null) {
+        url.searchParams.set('index', String(index));
+    } else {
+        url.searchParams.delete('index');
+    }
+    if (mode && questionId) {
+        url.searchParams.set('questionId', questionId);
+    } else {
+        url.searchParams.delete('questionId');
     }
     window.history.replaceState({}, '', url.toString());
 };
@@ -324,7 +352,11 @@ function App() {
     }, [selectedBank]);
 
     const startMode = useCallback(
-        (mode: StudyMode) => {
+        (
+            mode: StudyMode,
+            startIndex?: number | null,
+            startQuestionId?: string | null
+        ) => {
             let questionsToUse: Question[] = [];
 
             switch (mode) {
@@ -347,9 +379,25 @@ function App() {
                     questionsToUse = weightedShuffle(questions, performance);
             }
 
+            const matchedIndex = startQuestionId
+                ? questionsToUse.findIndex(
+                      question => question.id === startQuestionId
+                  )
+                : -1;
+            const resolvedIndex =
+                matchedIndex >= 0
+                    ? matchedIndex
+                    : typeof startIndex === 'number'
+                      ? startIndex
+                      : 0;
+            const clampedIndex = Math.min(
+                Math.max(resolvedIndex, 0),
+                Math.max(questionsToUse.length - 1, 0)
+            );
+
             setCurrentMode(mode);
             setCurrentQuestions(questionsToUse);
-            setCurrentIndex(0);
+            setCurrentIndex(clampedIndex);
         },
         [questions, performance]
     );
@@ -359,7 +407,11 @@ function App() {
         if (!isLoading && questions.length > 0 && !hasInitializedMode) {
             const modeFromURL = getModeFromURL();
             if (modeFromURL) {
-                startMode(modeFromURL);
+                startMode(
+                    modeFromURL,
+                    getIndexFromURL(),
+                    getQuestionIdFromURL()
+                );
             }
             setHasInitializedMode(true);
         }
@@ -370,8 +422,29 @@ function App() {
         if (isLoading || questions.length === 0) return;
         const handleURLChange = () => {
             const modeFromURL = getModeFromURL();
+            const indexFromURL = getIndexFromURL();
+            const questionIdFromURL = getQuestionIdFromURL();
             if (modeFromURL && modeFromURL !== currentMode) {
-                startMode(modeFromURL);
+                startMode(modeFromURL, indexFromURL, questionIdFromURL);
+            } else if (modeFromURL && modeFromURL === currentMode) {
+                const matchedIndex = questionIdFromURL
+                    ? currentQuestions.findIndex(
+                          question => question.id === questionIdFromURL
+                      )
+                    : -1;
+                const resolvedIndex =
+                    matchedIndex >= 0
+                        ? matchedIndex
+                        : typeof indexFromURL === 'number'
+                          ? indexFromURL
+                          : null;
+                if (resolvedIndex !== null) {
+                    const clampedIndex = Math.min(
+                        Math.max(resolvedIndex, 0),
+                        Math.max(currentQuestions.length - 1, 0)
+                    );
+                    setCurrentIndex(clampedIndex);
+                }
             } else if (!modeFromURL && currentMode) {
                 setCurrentMode(null);
                 setCurrentQuestions([]);
@@ -397,10 +470,11 @@ function App() {
 
     // Sync URL when currentMode changes (but not during initial load)
     useEffect(() => {
-        if (hasInitializedMode) {
-            setModeInURL(currentMode);
-        }
-    }, [currentMode, hasInitializedMode]);
+        if (!hasInitializedMode) return;
+        const currentQuestionId = currentQuestions[currentIndex]?.id ?? null;
+        const indexValue = currentMode ? currentIndex : null;
+        setSessionInURL(currentMode, indexValue, currentQuestionId);
+    }, [currentMode, currentIndex, currentQuestions, hasInitializedMode]);
 
     const handleAnswer = (isCorrect: boolean) => {
         const currentQuestion = currentQuestions[currentIndex];

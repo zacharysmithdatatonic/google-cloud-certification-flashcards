@@ -50,7 +50,7 @@
         "answer": [
             "B"
         ],
-        "explanation": "A is not correct because increasing the timeout will not fix the issue. The issue is caused by the rapid increase in inbound traffic and the requests timing out while waiting for new Cloud Run function instances to be created.\nB is correct because it will decouple the Cloud Run functions from the microservices sending emails and will allow Cloud Run functions to scale at their own pace.\nC is not correct because this will not decouple the applications. Although this is possible, a number of microservices might trigger the ‘email' Cloud Run function. Changing all these microservices will introduce code duplication, require development effort, and use unnecessary compute cycles.\nD is not correct because this does not solve the problem. Rapid increase of traffic will again result in similar scaling challenges.",
+        "explanation": "A is not correct because increasing the timeout will not fix the issue. The issue is caused by the rapid increase in inbound traffic and the requests timing out while waiting for new Cloud Run function instances to be created.\nB is correct because it will decouple the Cloud Run functions from the microservices sending emails and will allow Cloud Run functions to scale at their own pace.\nC is not correct because this will not decouple the applications. Although this is possible, a number of microservices might trigger the \u2018email' Cloud Run function. Changing all these microservices will introduce code duplication, require development effort, and use unnecessary compute cycles.\nD is not correct because this does not solve the problem. Rapid increase of traffic will again result in similar scaling challenges.",
         "questionImages": [],
         "optionImages": [
             null,
@@ -120,7 +120,7 @@
         ]
     },
     {
-        "question": "Your team is writing a backend application to implement the business logic for an interactive voice response (IVR) system that will support a payroll application.\n     The IVR system has the following technical characteristics:\n     - Each customer phone call is associated with a unique IVR session.\n     - The IVR system creates a separate persistent gRPC connection to the backend for each session. \n     - If the connection is interrupted, the IVR system establishes a new connection, causing a slight latency for that call. \n     \n     \n     You need to determine which compute environment should be used to deploy the backend application. Using current call data, you determine that:\n     - Call duration ranges from 1 to 30 minutes.\n     - Calls are typically made during business hours.\n     - There are significant spikes of calls around certain known dates (e.g., pay days), or when large payroll changes occur.\n     \n     \n     You want to minimize cost, effort, and operational overhead. Where should you deploy the backend application?",
+        "question": "Your team is writing a backend application to implement the business logic for an interactive voice response (IVR) system that will support a payroll application.\n     The IVR system has the following technical characteristics:\n     - Each customer phone call is associated with a unique IVR session.\n     - The IVR system creates a separate persistent gRPC connection to the backend for each session.\u00a0\n     - If the connection is interrupted, the IVR system establishes a new connection, causing a slight latency for that call.\u00a0\n     \n     \n     You need to determine which compute environment should be used to deploy the backend application.\u00a0Using current call data, you determine that:\n     - Call duration ranges from 1 to 30 minutes.\n     - Calls are typically made during business hours.\n     - There are significant spikes of calls around certain known dates (e.g., pay days), or when large payroll changes occur.\n     \n     \n     You want to minimize cost, effort, and operational overhead. Where should you deploy the backend application?",
         "options": [
             "Cloud Run",
             "Cloud Run functions",
@@ -180,12 +180,12 @@
         ]
     },
     {
-        "question": "You are developing a flower ordering application. Currently you have three microservices: \n     - Order Service (receives the orders)\n     - Order Fulfillment Service (processes the orders)\n     - Notification Service (notifies the customer when the order is filled)\n     \n     \n     You need to determine how the services will communicate with each other. You want incoming orders to be processed quickly, and you need to collect order information for fulfillment. You also want to make sure orders are not lost between your services and are able to communicate asynchronously. How should the requests be processed?",
+        "question": "You are developing a flower ordering application. Currently you have three microservices:\u00a0\n     - Order Service (receives the orders)\n     - Order Fulfillment Service (processes the orders)\n     - Notification Service (notifies the customer when the order is filled)\n     \n     \n     You need to determine how the services will communicate with each other. You want incoming orders to be processed quickly, and you need to collect order information for fulfillment. You also want to make sure orders are not lost between your services and are able to communicate asynchronously. How should the requests be processed?",
         "options": [
-            "Order request → Order Service → Order Fulfillment Service → Notification Service",
-            "Order request → Order Service → Cloud Storage bucket → Order Fulfillment Service → Cloud Storage bucket → Notification Service",
-            "Order request → Order Service → Firestore database → Order Fulfillment Service → Firestore database → Notification Service",
-            "Order request → Order Service → Pub/Sub queue → Order Fulfillment Service → Firestore database → Pub/Sub queue → Notification Service"
+            "Order request \u2192 Order Service \u2192 Order Fulfillment Service \u2192 Notification Service",
+            "Order request \u2192 Order Service \u2192 Cloud Storage bucket \u2192 Order Fulfillment Service \u2192 Cloud Storage bucket \u2192 Notification Service",
+            "Order request \u2192 Order Service \u2192 Firestore database \u2192 Order Fulfillment Service \u2192 Firestore database \u2192 Notification Service",
+            "Order request \u2192 Order Service \u2192 Pub/Sub queue \u2192 Order Fulfillment Service \u2192 Firestore database \u2192 Pub/Sub queue \u2192 Notification Service"
         ],
         "answer": [
             "D"
@@ -342,7 +342,7 @@
         ]
     },
     {
-        "question": "You are responsible for deploying a new API. That API will have three different URL paths: \n     - https://yourcompany.com/students\n     - https://yourcompany.com/teachers\n     - https://yourcompany.com/classes\n     \n     \n     You need to configure each API URL path to invoke a different function in your code. What should you do?",
+        "question": "You are responsible for deploying a new API. That API will have three different URL paths:\u00a0\n     - https://yourcompany.com/students\n     - https://yourcompany.com/teachers\n     - https://yourcompany.com/classes\n     \n     \n     You need to configure each API URL path to invoke a different function in your code. What should you do?",
         "options": [
             "Create three Cloud Run functions as three backend services exposed using an HTTPS load balancer.",
             "Create one Cloud Run function exposed directly.",
@@ -382,7 +382,7 @@
         ]
     },
     {
-        "question": "Your team has created an application that is deployed in a single GKE cluster. The application is split into two different Deployments, each with their own Service and accessed using a different HTTP path. \n     A legacy client running on-premises needs to access the application through Cloud Interconnect through a single IP address. How should you expose the application? (choose two)",
+        "question": "Your team has created an application that is deployed in a single GKE cluster. The application is split into two different Deployments, each with their own Service and accessed using a different HTTP path.\u00a0\n     A legacy client running on-premises needs to access the application through Cloud Interconnect through a single IP address. How should you expose the application? (choose two)",
         "options": [
             "Create a Gateway with the Gateway Class Name: gke-l7-rilb specification.",
             "Create a Service with the networking.gke.io/load-balancer-type: \"Internal\" annotation.",
@@ -713,7 +713,7 @@
         "answer": [
             "C"
         ],
-        "explanation": "A is incorrect because the argument “it worked on my machine” but doesn't work on Google Cloud is never valid.\nB is incorrect because Debugger snapshots only lets us review the application at a single point in time.\nC is correct because it provides latency per function and historical latency information.\nD is incorrect because while it works it requires a lot of work and is not the clear, optimal choice.",
+        "explanation": "A is incorrect because the argument \u201cit worked on my machine\u201d but doesn't work on Google Cloud is never valid.\nB is incorrect because Debugger snapshots only lets us review the application at a single point in time.\nC is correct because it provides latency per function and historical latency information.\nD is incorrect because while it works it requires a lot of work and is not the clear, optimal choice.",
         "questionImages": [],
         "optionImages": [
             null,
@@ -763,7 +763,7 @@
         ]
     },
     {
-        "question": "You need to redesign the ingestion of audit events from your authentication service to allow it to handle a large increase in traffic. Currently, the audit service and the authentication service run in the same Compute Engine virtual machine. You plan to split each service into their own pool of Compute Engine VM instances and use Pub/Sub to send events from the authentication service to the audit service. \n     How should you set up the Pub/Sub topics and subscriptions to ensure that the system can handle a large volume of messages and can scale efficiently?",
+        "question": "You need to redesign the ingestion of audit events from your authentication service to allow it to handle a large increase in traffic. Currently, the audit service and the authentication service run in the same Compute Engine virtual machine. You plan to split each service into their own pool of Compute Engine VM instances and use Pub/Sub to send events from the authentication service to the audit service.\u00a0\n     How should you set up the Pub/Sub topics and subscriptions to ensure that the system can handle a large volume of messages and can scale efficiently?",
         "options": [
             "Create one Pub/Sub topic. Create one pull subscription.",
             "Create one Pub/Sub topic. Create one pull subscription per audit service instance.",
