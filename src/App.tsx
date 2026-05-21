@@ -24,6 +24,7 @@ import {
     StudyMode,
     QuestionBank,
     QUESTION_BANKS,
+    CertificationTier,
 } from './types';
 import { loadQuestionsFromJSON } from './utils/questionParser';
 import {
@@ -48,6 +49,9 @@ import {
 import {
     BookOpen,
     Brain,
+    Cloud,
+    Code,
+    Database,
     RotateCcw,
     List,
     BarChart3,
@@ -61,6 +65,10 @@ import {
     Edit3,
     Clock,
     Menu,
+    Network,
+    Settings,
+    Shield,
+    Users,
     X,
     Sparkles,
     Home,
@@ -71,6 +79,42 @@ import { CertificationSelector } from './components/CertificationSelector';
 interface StudyTimeStats {
     totalStudyTime: number; // in minutes
 }
+
+const getCertificationIcon = (key: string, size: number = 24) => {
+    const iconProps = { size, strokeWidth: 1.5 };
+    switch (key) {
+        case 'cdl':
+            return <Cloud {...iconProps} />;
+        case 'genai':
+            return <Sparkles {...iconProps} />;
+        case 'ace':
+            return <Cloud {...iconProps} />;
+        case 'adp':
+            return <Database {...iconProps} />;
+        case 'agwa':
+            return <Users {...iconProps} />;
+        case 'pca':
+            return <Cloud {...iconProps} />;
+        case 'pcde':
+            return <Database {...iconProps} />;
+        case 'pcd':
+            return <Code {...iconProps} />;
+        case 'pde':
+            return <Database {...iconProps} />;
+        case 'pcdo':
+            return <Settings {...iconProps} />;
+        case 'pcse':
+            return <Shield {...iconProps} />;
+        case 'pcne':
+            return <Network {...iconProps} />;
+        case 'pmle':
+            return <Brain {...iconProps} />;
+        case 'psoe':
+            return <Shield {...iconProps} />;
+        default:
+            return <BookOpen {...iconProps} />;
+    }
+};
 
 // Accuracy Display Component
 const AccuracyDisplay: React.FC<{
@@ -182,6 +226,44 @@ const getModeFromURL = (): StudyMode | null => {
         : null;
 };
 
+const toSlug = (value: string) =>
+    value
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
+const getBankPath = (bank: QuestionBank) =>
+    `/${bank.tier}/${toSlug(bank.name)}`;
+
+const getBankFromPath = (): QuestionBank | null => {
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    if (parts.length < 2) return null;
+    const [tier, slug] = parts;
+    if (!['foundational', 'associate', 'professional'].includes(tier)) {
+        return null;
+    }
+    return (
+        QUESTION_BANKS.find(
+            bank =>
+                bank.tier === (tier as CertificationTier) &&
+                toSlug(bank.name) === slug &&
+                bank.available
+        ) || null
+    );
+};
+
+const setBankInURL = (bank: QuestionBank | null) => {
+    const url = new URL(window.location.href);
+    if (bank) {
+        url.pathname = getBankPath(bank);
+    } else {
+        url.pathname = '/';
+    }
+    if (url.pathname === window.location.pathname) return;
+    window.history.pushState({}, '', url.toString());
+};
+
 const getIndexFromURL = (): number | null => {
     const urlParams = new URLSearchParams(window.location.search);
     const indexParam = urlParams.get('index');
@@ -223,6 +305,8 @@ const setSessionInURL = (
 function App() {
     // Get initial bank from localStorage or null (show selector)
     const getInitialBank = (): QuestionBank | null => {
+        const bankFromPath = getBankFromPath();
+        if (bankFromPath) return bankFromPath;
         const savedKey = localStorage.getItem('last-used-bank');
         if (savedKey) {
             const bank = QUESTION_BANKS.find(
@@ -266,6 +350,10 @@ function App() {
         if (selectedBank) {
             localStorage.setItem('last-used-bank', selectedBank.key);
         }
+    }, [selectedBank]);
+
+    useEffect(() => {
+        setBankInURL(selectedBank);
     }, [selectedBank]);
 
     const handleOpenMetrics = (event: React.MouseEvent<HTMLElement>) => {
@@ -424,6 +512,12 @@ function App() {
             const modeFromURL = getModeFromURL();
             const indexFromURL = getIndexFromURL();
             const questionIdFromURL = getQuestionIdFromURL();
+            const bankFromPath = getBankFromPath();
+            if (bankFromPath && bankFromPath.key !== selectedBank?.key) {
+                setSelectedBank(bankFromPath);
+            } else if (!bankFromPath && selectedBank) {
+                setSelectedBank(null);
+            }
             if (modeFromURL && modeFromURL !== currentMode) {
                 startMode(modeFromURL, indexFromURL, questionIdFromURL);
             } else if (modeFromURL && modeFromURL === currentMode) {
@@ -456,7 +550,7 @@ function App() {
         return () => {
             window.removeEventListener('popstate', handleURLChange);
         };
-    }, [isLoading, questions.length, currentMode, startMode]);
+    }, [isLoading, questions.length, currentMode, selectedBank, startMode]);
 
     // Save performance to localStorage whenever it changes (per bank)
     useEffect(() => {
@@ -614,11 +708,9 @@ function App() {
                 spacing={1}
                 sx={{ alignItems: 'center', mb: 2 }}
             >
-                {selectedBank?.key === 'genai' ? (
-                    <Sparkles size={22} />
-                ) : (
-                    <Brain size={22} />
-                )}
+                {selectedBank
+                    ? getCertificationIcon(selectedBank.key, 22)
+                    : null}
                 <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
                     {selectedBank?.name || 'Certification'} Flashcards
                 </Typography>
@@ -626,14 +718,17 @@ function App() {
             <Stack spacing={2}>
                 <Button
                     variant="text"
-                    startIcon={<Home size={18} />}
+                    startIcon={<ArrowLeft size={18} />}
                     onClick={() => {
                         setSelectedBank(null);
                         setCurrentMode(null);
                         setIsSidebarOpen(false);
                         window.scrollTo(0, 0);
                     }}
-                    sx={{ justifyContent: 'flex-start' }}
+                    sx={{
+                        justifyContent: 'flex-start',
+                        color: 'common.black',
+                    }}
                 >
                     Change Certification
                 </Button>
@@ -723,8 +818,8 @@ function App() {
         let appName = selectedBank?.name
             ? `${selectedBank.name} Flashcards`
             : 'Certification Flashcards';
-        if (selectedBank?.key === 'genai') {
-            appLogo = <Sparkles size={24} />;
+        if (selectedBank) {
+            appLogo = getCertificationIcon(selectedBank.key, 24);
         }
         return (
             <AppBar
@@ -751,62 +846,56 @@ function App() {
                             flex: 1,
                         }}
                     >
+                        <IconButton
+                            onClick={
+                                currentMode
+                                    ? handleBackToMenu
+                                    : handleBackToCertifications
+                            }
+                            aria-label={
+                                currentMode
+                                    ? 'Back to menu'
+                                    : 'Back to certifications'
+                            }
+                            sx={{ color: 'common.black' }}
+                        >
+                            <ArrowLeft size={20} />
+                        </IconButton>
+                        <Stack direction="row" spacing={1}>
+                            {appLogo}
+                            <Typography variant="h6">{appName}</Typography>
+                        </Stack>
                         {currentMode ? (
-                            <>
-                                <Button
-                                    onClick={handleBackToMenu}
-                                    startIcon={<ArrowLeft size={16} />}
-                                    variant="text"
-                                >
-                                    Menu
-                                </Button>
-                                <Chip
-                                    icon={
-                                        currentMode === 'flashcard' ? (
-                                            <BookOpen size={16} />
-                                        ) : currentMode === 'quiz' ? (
-                                            <Brain size={16} />
-                                        ) : currentMode === 'review' ? (
-                                            <RotateCcw size={16} />
-                                        ) : currentMode === 'fill-in-blank' ? (
-                                            <Edit3 size={16} />
-                                        ) : (
-                                            <List size={16} />
-                                        )
-                                    }
-                                    label={
-                                        currentMode === 'flashcard'
-                                            ? 'Flashcard Mode'
-                                            : currentMode === 'quiz'
-                                              ? 'Quiz Mode'
-                                              : currentMode === 'review'
-                                                ? 'Review Mode'
-                                                : currentMode ===
-                                                    'fill-in-blank'
-                                                  ? 'Fill-in-Blank Mode'
-                                                  : 'Memorise Mode'
-                                    }
-                                    color="primary"
-                                    variant="outlined"
-                                    sx={{ bgcolor: 'primary.light' }}
-                                />
-                            </>
-                        ) : (
-                            <>
-                                <IconButton
-                                    onClick={handleBackToCertifications}
-                                    aria-label="Change certification"
-                                >
-                                    <Home size={20} />
-                                </IconButton>
-                                <Stack direction="row" spacing={1}>
-                                    {appLogo}
-                                    <Typography variant="h6">
-                                        {appName}
-                                    </Typography>
-                                </Stack>
-                            </>
-                        )}
+                            <Chip
+                                icon={
+                                    currentMode === 'flashcard' ? (
+                                        <BookOpen size={16} />
+                                    ) : currentMode === 'quiz' ? (
+                                        <Brain size={16} />
+                                    ) : currentMode === 'review' ? (
+                                        <RotateCcw size={16} />
+                                    ) : currentMode === 'fill-in-blank' ? (
+                                        <Edit3 size={16} />
+                                    ) : (
+                                        <List size={16} />
+                                    )
+                                }
+                                label={
+                                    currentMode === 'flashcard'
+                                        ? 'Flashcard Mode'
+                                        : currentMode === 'quiz'
+                                          ? 'Quiz Mode'
+                                          : currentMode === 'review'
+                                            ? 'Review Mode'
+                                            : currentMode === 'fill-in-blank'
+                                              ? 'Fill-in-Blank Mode'
+                                              : 'Memorise Mode'
+                                }
+                                color="primary"
+                                variant="outlined"
+                                sx={{ bgcolor: 'primary.light' }}
+                            />
+                        ) : null}
                     </Stack>
                     {isDesktop ? (
                         <Stack

@@ -176,12 +176,12 @@ export const CertificationSelector: React.FC<CertificationSelectorProps> = ({
                             spacing={2}
                             sx={{ alignItems: 'center' }}
                         >
-                            <svg viewBox="0 0 48 48" width="40" height="40">
-                                <path
-                                    fill="#4285F4"
-                                    d="M24 4C12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20S35.05 4 24 4zm-2 35.86c-7.9-.98-14-7.7-14-15.86 0-1.24.16-2.42.42-3.58L18 30v2c0 2.2 1.8 4 4 4v3.86zm13.8-5.08c-.52-1.62-2-2.78-3.8-2.78h-2v-6c0-1.1-.9-2-2-2h-8v-4h4c1.1 0 2-.9 2-2v-4h4c2.2 0 4-1.8 4-4v-.82C41.86 10.38 44 16.12 44 24c0 4.16-1.6 7.94-4.2 10.78z"
-                                />
-                            </svg>
+                            <Box
+                                component="img"
+                                src={`${process.env.PUBLIC_URL}/logo.png`}
+                                alt="Certification Flashcards logo"
+                                sx={{ width: 40, height: 40 }}
+                            />
                             <Box>
                                 <Typography variant="h4">
                                     Google Cloud
