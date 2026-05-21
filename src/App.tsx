@@ -71,7 +71,6 @@ import {
     Users,
     X,
     Sparkles,
-    Home,
 } from 'lucide-react';
 import { ConfirmModal } from './components/ConfirmModal';
 import { CertificationSelector } from './components/CertificationSelector';
@@ -550,7 +549,14 @@ function App() {
         return () => {
             window.removeEventListener('popstate', handleURLChange);
         };
-    }, [isLoading, questions.length, currentMode, selectedBank, startMode]);
+    }, [
+        isLoading,
+        questions.length,
+        currentMode,
+        currentQuestions,
+        selectedBank,
+        startMode,
+    ]);
 
     // Save performance to localStorage whenever it changes (per bank)
     useEffect(() => {
