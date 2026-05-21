@@ -233,9 +233,31 @@ const toSlug = (value: string) =>
         .replace(/^-+|-+$/g, '');
 
 const getBasePath = () => {
-    const publicUrl = process.env.PUBLIC_URL || '/';
-    const basePath = new URL(publicUrl, window.location.origin).pathname;
-    return basePath.endsWith('/') ? basePath.slice(0, -1) : basePath;
+    const publicUrl = process.env.PUBLIC_URL || '';
+    if (publicUrl && publicUrl !== '.') {
+        const basePath = new URL(publicUrl, window.location.origin).pathname;
+        const normalized = basePath.endsWith('/')
+            ? basePath.slice(0, -1)
+            : basePath;
+        if (normalized && normalized !== '/') {
+            return normalized;
+        }
+    }
+
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const tierIndex = parts.findIndex(part =>
+        ['foundational', 'associate', 'professional'].includes(part)
+    );
+    if (tierIndex > 0) {
+        return `/${parts.slice(0, tierIndex).join('/')}`;
+    }
+    if (tierIndex === 0) {
+        return '';
+    }
+    if (parts.length === 1) {
+        return `/${parts[0]}`;
+    }
+    return '';
 };
 
 const getBankPath = (bank: QuestionBank) => {
