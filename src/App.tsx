@@ -323,17 +323,10 @@ const setSessionInURL = (
 };
 
 function App() {
-    // Get initial bank from localStorage or null (show selector)
+    // Get initial bank from URL or null (show selector)
     const getInitialBank = (): QuestionBank | null => {
         const bankFromPath = getBankFromPath();
         if (bankFromPath) return bankFromPath;
-        const savedKey = localStorage.getItem('last-used-bank');
-        if (savedKey) {
-            const bank = QUESTION_BANKS.find(
-                b => b.key === savedKey && b.available
-            );
-            return bank || null;
-        }
         return null;
     };
     const [questions, setQuestions] = useState<Question[]>([]);
@@ -364,13 +357,6 @@ function App() {
     const [showResetStatsModal, setShowResetStatsModal] = useState(false);
     const theme = useTheme();
     const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
-
-    // Save selected bank to local storage
-    useEffect(() => {
-        if (selectedBank) {
-            localStorage.setItem('last-used-bank', selectedBank.key);
-        }
-    }, [selectedBank]);
 
     useEffect(() => {
         const redirectPath = getRedirectPath();
