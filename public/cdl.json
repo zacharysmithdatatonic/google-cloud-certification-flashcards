@@ -1,0 +1,582 @@
+[
+    {
+        "question": "How can Google Cloud help an organization achieve its sustainability goals?",
+        "options": [
+            "Google Cloud data centers are carbon free.",
+            "Data centers have maximum physical security.",
+            "Data centers are regionally distributed around the world.",
+            "Google Cloud data centers are ISO certified for their environmental performance and efficiency."
+        ],
+        "answer": [
+            "D"
+        ],
+        "explanation": "A is incorrect because although this is ultimately Google\u2019s goal, it\nis estimated that they will not reach this until 2030.\nB is incorrect because the\nphysical security of data centers does not affect sustainability.\nC is incorrect\nbecause the location of data centers does not help with sustainability.\nD is\ncorrect because the ISO 14001 certification outlines a framework to enhance\nenvironmental performance through improving resource efficiency and reducing\nwaste.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "An organization is monitoring a service level indicator based on the volume of traffic that their application is receiving. Why is it important to monitor this indicator?",
+        "options": [
+            "The volume of traffic always affects the user experience.",
+            "High traffic levels are frequently tied to degrading performance.",
+            "Historical trends in traffic can be used for capacity planning.",
+            "Low traffic volumes always indicate configuration issues."
+        ],
+        "answer": [
+            "C"
+        ],
+        "explanation": "A is incorrect because traffic does not directly affect user\nexperience, unlike latency for example.\nB is incorrect because traffic is not\nnecessarily tied to degrading performance, unlike saturation.\nC is correct\nbecause traffic is an indicator of system demand that can be used for capacity\nplanning.\nD is incorrect because monitoring for errors would be more likely to\nhighlight configuration issues.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "An organization has raised a support case with Google Cloud Customer Care. When is it appropriate for a case to be escalated?",
+        "options": [
+            "When a high-impact issue needs to be resolved as fast as possible",
+            "When the priority of the ticket has been set incorrectly",
+            "When flagging a break in the process or a communication issue",
+            "When a case has been resolved and needs to be reopened"
+        ],
+        "answer": [
+            "C"
+        ],
+        "explanation": "A is incorrect because the best solution for high-impact issues is\nto ensure that the case is set to the appropriate priority, ensuring that the case\nis assigned to the right resources as quickly as possible.\nB is incorrect because\na customer can set and change the priority of a case without an escalation.\nC is\ncorrect because escalation is meant for flagging process breaks or for the rare\noccasion that a case is stuck because a customer and the Customer Care team aren\u2019t\nfully in sync, despite actively communicating the issue to determine the next steps.\nD is incorrect because a case can be reopened without an escalation.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "An organization wants to track and understand its expenses on Google Cloud and receive recommendations on cost optimizations. Which tool should the organization use?",
+        "options": [
+            "Cloud Billing reports",
+            "Resource quotas and thresholds",
+            "Committed use discounts",
+            "Invoices"
+        ],
+        "answer": [
+            "A"
+        ],
+        "explanation": "A is correct because Cloud Billing reports offer a reactive method\nto help you track and understand what you\u2019ve already spent on Google Cloud resources\nand provide ways to help optimize your costs.\nB is incorrect because resource\nquotas allow you to set limits on the amount of resources you use, however they do\nnot provide information about past spend or potential optimizations.\nC is\nincorrect because committed use discounts are simply a mechanism of achieving higher\ndiscounts by committing to longer-term use.\nD is incorrect because Invoices will\nonly show the overall cost of cloud spend, but do not provide analysis and cost\noptimization recommendations.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "An organization wants to analyze data collected from a fleet of rental vehicles. Onboard sensors send location data every 30 seconds. They want to ingest this data. Which Google product or service should they use?",
+        "options": [
+            "Dataflow",
+            "Pub/Sub",
+            "Cloud SQL",
+            "Cloud Storage"
+        ],
+        "answer": [
+            "B"
+        ],
+        "explanation": "A is incorrect because Dataflow is used to transform and process\ndata after it is received, not to ingest it.\nB is correct because Pub/Sub is a\nmessaging service that can receive data from device streams such as sensors, at the\nstart of a data pipeline.\nC is incorrect because Cloud SQL is a relational\ndatabase, and is not suitable for large amounts of sensor data.\nD is incorrect\nbecause while Cloud Storage might be used to store data, ingesting it reliably\nrequires a messaging service.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "An organization wants to compare the total cost of ownership (TCO) of operating in the cloud versus on-premises. What on-premises costs should be compared to cloud operating costs?",
+        "options": [
+            "The cost of on-premises operational overhead",
+            "The initial investment cost of on-premises hardware",
+            "The maintenance cost of replacing on-premises hardware",
+            "The cost of on-premises hardware investment, operational overhead, and missed-opportunity costs"
+        ],
+        "answer": [
+            "D"
+        ],
+        "explanation": "A is incorrect because the comparison ignores hardware investment\nand missed opportunity costs.\nB is incorrect because the comparison ignores\noperational overhead and missed opportunity costs.\nC is incorrect because\nmaintaining the on-premises hardware lifecycle is just one component of the total\ncost of ownership.\nD is correct because it is important to consider all of these\nfactors when calculating a total cost of ownership to compare with operating in the\ncloud.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "An organization is migrating their business applications from on-premises to the cloud.",
+        "options": [
+            "Increased on-premises hardware maintenance costs",
+            "Reduced cloud software licensing costs",
+            "Reduced on-premises infrastructure management costs",
+            "Increased cloud hardware management costs"
+        ],
+        "answer": [
+            "C"
+        ],
+        "explanation": "A is incorrect because the cloud migration entails transitioning\nfrom on-premises hardware to the cloud.\nB is incorrect because the software\nlicensing cost persists and must be migrated for certain applications, thus failing\nto reduce costs.\nC is correct because the cloud service providers take on the\nonus of hardware, cooling, power, security, and maintenance of the physical\ninfrastructure, thereby reducing the on-premises costs.\nD is incorrect because\ncloud service providers assume the responsibility of hardware and the associated\ncosts of hardware management",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "An organization is implementing a cloud center of excellence by creating a central partnership across finance, technology and business function teams. What is a benefit of this approach?",
+        "options": [
+            "Enabling individual project teams to apply their own approach to security.",
+            "Ensuring that there is visibility into ongoing cloud spend.",
+            "Reviewing cloud decisions on a quarterly basis.",
+            "Owning all cloud spending budgets across the organization."
+        ],
+        "answer": [
+            "B"
+        ],
+        "explanation": "A is incorrect because a cloud center of excellence should promote a\ncentral best practice on security.\nB is correct because this partnership provides\nvisibility and accountability by combining the expertise of finance and technology\nteams.\nC is incorrect because a cloud center of excellence can promote tools that\nallow waste and overspend to be quickly identified and eliminated.\nD is incorrect\nbecause budgets should be the responsibility of the individual teams that use them,\npromoting greater accountability.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "An organization wants to deploy new workloads to the cloud, but must keep some systems on-premises for compliance reasons. They need to centrally manage both environments. Which type of environment would suit the organization?",
+        "options": [
+            "Multi cloud environment",
+            "Virtual machine environment",
+            "Hybrid cloud environment",
+            "Container environment"
+        ],
+        "answer": [
+            "C"
+        ],
+        "explanation": "A is incorrect because a multi cloud environment by itself involves\nmultiple cloud providers, but not necessarily an on-premises component.\nB is\nincorrect because a virtual machine environment is a type of cloud computing, but\nnot a hybrid cloud environment that would support on-premises systems.\nC is\ncorrect because a hybrid cloud environment allows some system components to remain\non-premises while others are moved or deployed in the cloud.\nD is incorrect\nbecause a container environment is a type of cloud computing, but not a hybrid cloud\nenvironment that would support on-premises systems.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "An organization is establishing best practices for financial governance in the cloud. They have multiple teams building applications. Which Google-recommended approach should the organization use to manage spending?",
+        "options": [
+            "Define ownership for projects, and establish financial accountability for project owners.",
+            "Define ownership for projects, but centralize financial accountability.",
+            "Set a fixed cloud spend budget across all projects.",
+            "Centralize financial accountability, and review spending monthly."
+        ],
+        "answer": [
+            "A"
+        ],
+        "explanation": "A is correct because cloud spending is decentralized and variable,\nand teams that use the cloud need visibility and accountability for their\nspending.\nB is incorrect because cloud spending is decentralized and variable,\nand teams that use the cloud need visibility and accountability for their\nspending.\nC is incorrect because resource consumption and costs will vary across\nteams and projects, so fixed budgets will be problematic.\nD is incorrect because\nreviewing spending monthly will miss changes in spending that can be analyzed for\noften using cost management tools.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "A retail store has discovered a cost-effective solution for creating self-service kiosks. They can use existing check-out hardware and purchase a virtual customer service application. Why do they also need an API?",
+        "options": [
+            "To update the check-out hardware remotely.",
+            "To migrate all customer data for disaster recovery.",
+            "To connect the new application with the legacy system.",
+            "To connect the check-out hardware to the public cloud."
+        ],
+        "answer": [
+            "C"
+        ],
+        "explanation": "A) is not correct. APIs don\u2019t update hardware.\nB) is not correct.\nDisaster recovery is not relevant to the business decision.\nC) is correct. APIs\ncan create new business value by connecting legacy systems (the checkout hardware)\nwith new software (the virtual customer service application).\nD) is not correct.\nConfidential information should not be shared with the public cloud.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "An organization is looking for a solution to help them build applications using their preferred programming language and tools. They also want to minimize time spent on infrastructure management.",
+        "options": [
+            "Bare Metal Solution",
+            "Dataproc",
+            "Pub/Sub",
+            "Cloud Run"
+        ],
+        "answer": [
+            "D"
+        ],
+        "explanation": "A is incorrect because a bare metal solution requires managing the\ninfrastructure.\nB is incorrect because the Dataproc solution is not well suited\nfor building applications. It is a solution to run Hadoop workloads in the\ncloud.\nC is incorrect because Pub/Sub is not well suited for building\napplications using their preferred programming language and tools. It is a solution\nfor events streaming ingestion.\nD is correct because Cloud Run is a fully managed\ncontainer deployment solution available in Google Cloud. Using Cloud Run,\norganizations can minimize time spent on infrastructure management.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "What would provide near-unlimited availability of computing resources without requiring an organization to procure and provision new equipment?",
+        "options": [
+            "Public cloud",
+            "Private cloud",
+            "Microservices",
+            "Containers"
+        ],
+        "answer": [
+            "A"
+        ],
+        "explanation": "A is correct because the public cloud would provide near-unlimited\navailability of computing resources without an organization needing to procure and\nprovision new equipment. The public cloud also gives massive scalability,\nelasticity, a pay-as-you-go model, and all the hardware management is handled by the\ncloud provider.\nB is incorrect because the private cloud still requires your\norganization to own and manage hardware, which limits the \"unlimited\" scalability\naspect.\nC is incorrect because microservices help with scalability issues within\nan application but don\u2019t address the need for physical computing resources\nthemselves.\nD is incorrect because the container makes applications portable\nbetween environments. Containers make deployment easier but still need to run on\nhardware, which the organization requires to procure and provision the hardware.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "In Google\u2019s cloud security model, which aspect emphasizes the importance of keeping sensitive information safe and secret?",
+        "options": [
+            "Integrity",
+            "Confidentiality",
+            "Availability",
+            "Compliance"
+        ],
+        "answer": [
+            "B"
+        ],
+        "explanation": "A is incorrect because integrity refers to the accuracy of data and\nnot specifically to how the data is accessed.\nB is correct because processes and\npolicies around confidentiality help to ensure that only authorized people can\naccess sensitive data.\nC is incorrect because availability refers to ensuring\nsystems are always accessible, but does not relate to how data is accessed.\nD is\nincorrect because compliances relate to industry standards and legal requirements.\nThese standards may require confidentiality, but will also touch on other security\naspects.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "An organization needs to store structured, semi-structured, and unstructured data in its raw, native format in the same repository.",
+        "options": [
+            "Data lake",
+            "Data warehouse",
+            "Database",
+            "Data mesh"
+        ],
+        "answer": [
+            "A"
+        ],
+        "explanation": "A is correct because a data lake offers a centralized, scalable\nstorage repository that can accommodate any data format and volume.\nB is\nincorrect because a data warehouse requires structured or semi-structured data and\npredefined schemas up front.\nC is incorrect because a database requires\nstructured or semi-structured data and predefined schemas up front\nD is incorrect\nbecause a data mesh is a decentralized approach to data architectures.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "Which cybersecurity threat can lead to information being stolen or damaged without a user ever being aware?",
+        "options": [
+            "Ransomware attack",
+            "SLA policy violation",
+            "Malware attack",
+            "Incomplete data input"
+        ],
+        "answer": [
+            "C"
+        ],
+        "explanation": "A is incorrect because ransomware inflicts data damage, which is\nusually apparent to the user. Ransomware renders files inaccessible and is\naccompanied by ransom notes demanding payment for their restoration.\nB is\nincorrect because the SLA Policy violation constitutes more of a contractual issue\nthan a direct cybersecurity risk.\nC is correct because a malware attack is\nmeticulously crafted to function without the user's knowledge. The attack may\nconsist of viruses, spyware, trojans, or other forms of code capable of data theft,\nencryption, or damage.\nD is incorrect because the primary cause of incomplete\ndata input is either data quality or user error, and this does not pose a security\nthreat.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "How would an organization benefit from using Looker?",
+        "options": [
+            "Advanced business intelligence and analytics",
+            "Optimal identity and access management",
+            "Leading serverless warehousing technology",
+            "Robust data roll-back accuracy"
+        ],
+        "answer": [
+            "A"
+        ],
+        "explanation": "A is correct because Looker is a business intelligence (BI) and data\nanalytics platform. Its core strength lies in helping organizations explore,\nvisualize, and understand data from various sources for enabling informed\ndecision-making.\nB is incorrect because the primary focus of Looker is business\nintelligence (BI) and data analysis, and identity and access management is managed\nseparately.\nC is incorrect because Looker is designed to establish connections\nwith different data warehouses, including BigQuery, Snowflake, and Redshift. It does\nnot function as a data storage solution by itself.\nD is incorrect because data\nrollbacks are inherent features of the underlying data warehouse. Looker focuses on\ndata analysis.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "An organization needs a platform to create custom end-to-end artificial intelligence models.",
+        "options": [
+            "Recommendations AI",
+            "Dataproc",
+            "Compute Engine",
+            "Vertex AI"
+        ],
+        "answer": [
+            "D"
+        ],
+        "explanation": "A is incorrect because Recommendations AI focuses on building\nrecommendation systems and is not ideal for a wide range of custom AI model\ndevelopment.\nB is incorrect because Dataproc is a managed service for large-scale\ndata processing using Apache Hadoop and Spark. While relevant for data preparation\nfor AI, it's not focused on the model development itself.\nC is incorrect as\nCompute Engine is general-purpose virtual machines and lacks the specialized AI\ntools and features offered by Vertex AI.\nD is correct because Vertex AI is the\ncomprehensive platform designed specifically for developing, deploying, and managing\ncustom AI models across the entire machine learning lifecycle.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "An organization needs to control access for users and resources within Google Cloud. Which service should the organization use?",
+        "options": [
+            "Hardware-based encryption",
+            "Cloud VPN",
+            "Cloud Interconnect",
+            "Cloud IAM"
+        ],
+        "answer": [
+            "D"
+        ],
+        "explanation": "A is incorrect because hardware-based encryption relates to\nencryption of storage, not control of user access.\nB is incorrect because Cloud\nVPN is a method of connecting different networks together, but does not directly\nrelate to controlling user access.\nC is incorrect because Cloud Interconnect is a\nmethod of connecting different networks together, but does not directly relate to\ncontrolling user access.\nD is correct because Cloud IAM provides fine-grained\ncontrol over who can access cloud resources, and what actions can be performed upon\nthose resources.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "An organization is moving its operations to the cloud, but needs to migrate a legacy application without making any changes to the code. Which migration path should the organization choose?",
+        "options": [
+            "Replatform",
+            "Refactor",
+            "Rehost",
+            "Retire"
+        ],
+        "answer": [
+            "C"
+        ],
+        "explanation": "A is incorrect because replatforming requires making some changes to\nan application to operate in the cloud.\nB is incorrect because refactoring\nrequires making significant changes to an application to operate in the cloud.\nC\nis correct because rehosting allows a legacy application to be moved to the cloud\nwithout making any major changes to the application.\nD is incorrect because\nretiring an application means ending its use entirely rather than migrating it.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "An organization has a small app that sends a mobile notification to a customer whenever a new order is placed on their website. They require a simple, event-driven, serverless service to host the code. Which service should the organization choose?",
+        "options": [
+            "Cloud Functions",
+            "Kubernetes Engine",
+            "Cloud Run",
+            "Compute Engine"
+        ],
+        "answer": [
+            "A"
+        ],
+        "explanation": "A is correct because Cloud Functions is a simple service for hosting\nsingle-purpose functions that are executed in response to events, such as new orders\nbeing received.\nB is incorrect because Kubernetes Engine is a more complex\nplatform for multiple container-based services, which would not be required in this\nscenario.\nC is incorrect because Cloud Run is designed to run container-based web\napplications.\nD is incorrect because Compute Engine is designed to run container\nbased applications.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "According to Google\u2019s AI principles, which scenario is an irresponsible use of AI technology?",
+        "options": [
+            "Creating mass blog posts by using generative AI.",
+            "Using data on previous customer interactions.",
+            "Forecasting customers that are likely to have a higher lifetime value.",
+            "Tracking user activity in financial organizations."
+        ],
+        "answer": [
+            "A"
+        ],
+        "explanation": "A is correct because creating fake blog posts or other\nmisinformation is a deliberate attempt to manipulate public opinion.\nB is\nincorrect because creating recommendations and personalized experiences benefits\ncustomers.\nC is incorrect because forecasting customers with higher predicted\nlifetime value helps businesses choose where to make their investments and benefits\ncustomers.\nD is incorrect because fraud detection is paramount in financial\norganizations to ensure that they operate ethically and within the law.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "An organization wants to migrate multiple virtual machines to the cloud. Which Google service should they choose?",
+        "options": [
+            "Compute Engine",
+            "Kubernetes Engine",
+            "Cloud Functions",
+            "Cloud Run"
+        ],
+        "answer": [
+            "A"
+        ],
+        "explanation": "A is correct because Compute Engine is Google Cloud\u2019s Infrastructure\nas a Service product for running virtual machines.\nB is incorrect because\nKubernetes Engine is designed to run containers, not virtual machines.\nC is\nincorrect because Cloud Functions is designed to run event-driven code, not virtual\nmachines.\nD is incorrect because Cloud Run is designed for containerised web\napplications, not virtual machines.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "An organization's developers are growing increasingly frustrated by the limitations of their on-premises infrastructure.",
+        "options": [
+            "They can optimize maintenance for their on-premises infrastructure.",
+            "They can expect 100% service availability.",
+            "They can avoid the limitations of serverless computing.",
+            "They can have new tools to innovate and optimize resource usage."
+        ],
+        "answer": [
+            "D"
+        ],
+        "explanation": "A is incorrect because Cloud technology lacks direct visibility and\ncontrol into physical infrastructure in a private, on-premises environment.\nB is\nincorrect because while Cloud providers may provide service level agreements for\ntheir services, they cannot guarantee 100% service availability due to the\npossibility of unforeseen factors such as user errors, misconfigurations, natural\ndisasters, and targeted attacks. Users of Cloud technology operate on a shared\nresponsibility model where the user also needs to manage a certain degree of\ngovernance.\nC is incorrect because serverless computing can help developers\novercome limitations of on-premises infrastructure by eliminating the need to\nprovision, manage, and scale physical servers.\nD is correct because Cloud\nplatforms offer access to new tools for rapid experimentation and empowering\ndevelopers to innovate while optimizing resource cost with flexible on-demand\nconsumption models. On-premises infrastructure, on the other hand, requires fixed,\nup-front technology investments.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "A global organization is developing an application to manage payments and online bank accounts in multiple regions. Each transaction must be handled consistently in their database, and they anticipate almost unlimited growth in the amount of data stored.",
+        "options": [
+            "Cloud Spanner",
+            "BigQuery",
+            "Cloud SQL",
+            "Cloud Storage"
+        ],
+        "answer": [
+            "A"
+        ],
+        "explanation": "A is correct because Cloud Spanner makes it possible to easily scale\nhorizontally across regions while also providing consistency and low latency.\nB\nis incorrect because while BigQuery can accommodate unlimited growth, it is\noptimized for analytical workloads, not transactional workloads. BigQuery is not\ndesigned to handle high concurrency.\nC is incorrect because while both Cloud SQL\nand Cloud Spanner are optimized for transactional workloads, Cloud Spanner is a\nbetter choice for handling global scalability and consistency.\nD is incorrect\nbecause Cloud Storage is an object storage service and not a database service.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "An organization wants an economical solution to store data such as files, graphical images, and videos and to access and share them securely.",
+        "options": [
+            "Cloud Spanner",
+            "Cloud SQL",
+            "Cloud Storage",
+            "BigQuery"
+        ],
+        "answer": [
+            "C"
+        ],
+        "explanation": "A is incorrect because Cloud Spanner requires structured data and\npredefined schemas, and is not optimized to store unstructured data such as files,\nimages, and videos.\nB is incorrect because Cloud SQL structured data and\npredefined schemas, and is not optimized to store unstructured data such as files,\nimages, and videos.\nC is correct because Cloud Storage can store any data type\nand offers flexible storage classes and cost models, scalability, global\naccessibility, and robust security features.\nD is incorrect because BigQuery\nrequires structured or semi-structured data.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "Why is data stored in Google Cloud secure and private?",
+        "options": [
+            "Data is encrypted when an appropriate tag is applied.",
+            "Data is encrypted by the Security Command Center.",
+            "Data is encrypted by Cloud Data Loss Prevention.",
+            "Data is encrypted by default."
+        ],
+        "answer": [
+            "D"
+        ],
+        "explanation": "A is incorrect because there is no need to apply any resource tag\nfor data to be encrypted. All data at rest and in transit are encrypted in Google\nCloud.\nB is incorrect because data is not encrypted in the Security Command\nCenter. Security Command Center gives insights into the security posture of systems\nand applications deployed in the Google Cloud customer environment.\nC is\nincorrect because Data Loss Prevention (DLP) does not encrypt the data. DLP detects\nif any sensitive information is leaking outside of a particular environment and\nsends alerts accordingly.\nD is correct because Google Cloud encrypts all data at\nrest and in transit by default.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "How is privacy defined in the context of cloud technology?",
+        "options": [
+            "Procedures to authenticate user identity",
+            "Restrictions on data access and sharing",
+            "Compliance with regulatory standards",
+            "Susceptibility to data breaches and cyber attacks"
+        ],
+        "answer": [
+            "B"
+        ],
+        "explanation": "A is incorrect because privacy is not the authentication of a user\u2019s\nidentity. Whereas, privacy is the restriction on data access.\nB is correct\nbecause in the context of cloud technology, privacy means that there are\nrestrictions on data access and how and who the data is shared.\nC is incorrect\nbecause compliance is when an organization has to abide by local laws and\nregulations for their data or operation. Whereas, privacy is the restriction on data\naccess.\nD is incorrect because susceptibility to data breaches and cyber attacks\nis a measure of how likely the event is to happen. Whereas, privacy is the\nrestriction on data access.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    },
+    {
+        "question": "When an organization adopts cloud technology, how does their total cost of ownership (TCO) shift?",
+        "options": [
+            "Away from operational expenditure toward capital expenditure",
+            "Away from capital expenditure toward operational expenditure",
+            "Away from cost management toward capital expenditure",
+            "Away from operational expenditure toward cost management"
+        ],
+        "answer": [
+            "B"
+        ],
+        "explanation": "A is incorrect because this answer option is opposite of what occurs\nwhen an organization adopts cloud technology. Cloud spend is metered on a\npay-per-use basis and therefore customers are paying for resources that they use. In\nother words, total cost of ownership (TCO) shifts from capital expenditure of buying\nhardware to operational expenditure of consuming the cloud resources.\nB is\ncorrect because cloud spend is metered on a pay-per-use basis and therefore\ncustomers are paying for resources that they use. In other words, total cost of\nownership (TCO) shifts from capital expenditure of buying hardware to operational\nexpenditure of consuming the cloud resources.\nC is incorrect because when an\norganization adopts cloud technology, they move away from capital expenditure.\nD\nis incorrect because when an organization adopts cloud technology, they move towards\nan operational expenditure model and not away from it. Cost management should be a\npart of operating cloud technology solutions.",
+        "questionImages": [],
+        "optionImages": [
+            null,
+            null,
+            null,
+            null
+        ]
+    }
+]

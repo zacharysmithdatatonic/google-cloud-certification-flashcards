@@ -87,8 +87,8 @@ export const QUESTION_BANKS: QuestionBank[] = [
         name: 'Cloud Digital Leader',
         shortName: 'CDL',
         tier: 'foundational',
-        dataset: null,
-        available: false,
+        dataset: '/cdl.json',
+        available: true,
         color: '#34A853',
     },
     {
